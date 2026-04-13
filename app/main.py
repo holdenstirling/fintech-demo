@@ -1,4 +1,5 @@
-from typing import Optional
+from contextlib import asynccontextmanager
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Query, Header
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,13 +8,15 @@ from app.models import PaymentRequest, PaymentResponse
 from app import payments
 from app.database import init_db, get_connection, get_idempotency_result, store_idempotency_result
 
-app = FastAPI(title="FinTechCo Payments API", version="2.1.4")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
+    yield
+
+
+app = FastAPI(title="FinTechCo Payments API", version="2.1.4", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
@@ -45,17 +48,17 @@ async def create_payment(
     result = payments.create_payment(payment)
 
     if idempotency_key:
-        store_idempotency_result(idempotency_key, result.dict())
+        store_idempotency_result(idempotency_key, result.model_dump())
 
     return result
 
 
-@app.get("/api/payments", response_model=list[PaymentResponse])
+@app.get("/api/payments", response_model=List[PaymentResponse])
 async def list_payments(limit: int = Query(50, le=200)):
     return payments.list_payments(limit)
 
 
-@app.get("/api/payments/search", response_model=list[PaymentResponse])
+@app.get("/api/payments/search", response_model=List[PaymentResponse])
 async def search_payments(customer_id: str):
     """Search payments by customer ID."""
     with get_connection() as conn:
@@ -77,7 +80,7 @@ async def get_payment(payment_id: str):
 
 # ── Admin ─────────────────────────────────────────────────────────────────────
 
-@app.get("/api/admin/payments", response_model=list[PaymentResponse])
+@app.get("/api/admin/payments", response_model=List[PaymentResponse])
 async def admin_list_all_payments():
     """
     Returns full payment history for all customers.

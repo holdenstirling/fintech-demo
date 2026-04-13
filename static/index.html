@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTechCo — Payments</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Local assets — no CDN dependency, works offline -->
+  <script src="/static/tailwind.js"></script>
+  <script defer src="/static/alpine.min.js"></script>
+  <!-- Fonts: falls back to system fonts if offline -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -302,9 +304,12 @@
               currency: this.form.currency,
               description: this.form.description || null,
             };
+            // Generate a UUID idempotency key per submission — prevents accidental double-charges
+            // from double-clicks or network retries on the form
+            const idempotencyKey = crypto.randomUUID();
             const res = await fetch('/api/payments', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
               body: JSON.stringify(body),
             });
             if (!res.ok) throw new Error(await res.text());

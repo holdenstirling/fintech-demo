@@ -1,6 +1,7 @@
 """
 Payment API tests — FTC-4421 idempotency fix branch.
 """
+import app.database as db_module
 
 
 def test_create_payment_succeeds(client):
@@ -44,7 +45,7 @@ def test_invalid_amount_rejected(client):
 
 
 def test_idempotency_key_prevents_duplicate_charge(client):
-    """First request with a key creates a charge (201)."""
+    """First request with a key creates a charge (201). Duplicate returns same payment (200)."""
     payload = {"amount": 9900, "currency": "usd", "customer_id": "cust_idem", "description": "Invoice #8821"}
     key = "test-idem-key-abc123"
 
@@ -52,30 +53,53 @@ def test_idempotency_key_prevents_duplicate_charge(client):
     assert res.status_code == 201
     first_id = res.json()["id"]
 
-    # Duplicate request returns same payment, no new charge
     res2 = client.post("/api/payments", json=payload, headers={"Idempotency-Key": key})
     assert res2.status_code == 200
-    assert res2.json()["id"] == first_id, "Duplicate request should return the original payment ID"
+    assert res2.json()["id"] == first_id, "Duplicate request must return the original payment ID"
 
 
 def test_different_keys_create_separate_charges(client):
-    """Two requests with different keys should each create a new charge."""
+    """Two requests with different keys each create a new charge."""
     payload = {"amount": 5000, "currency": "usd", "customer_id": "cust_two"}
-
     r1 = client.post("/api/payments", json=payload, headers={"Idempotency-Key": "key-one"})
     r2 = client.post("/api/payments", json=payload, headers={"Idempotency-Key": "key-two"})
-
     assert r1.json()["id"] != r2.json()["id"]
 
 
 def test_no_key_still_works(client):
-    """Requests without idempotency key continue to work normally."""
+    """Requests without idempotency key continue to work (backwards compatible)."""
     res = client.post("/api/payments", json={
         "amount": 1000, "currency": "usd", "customer_id": "cust_nokey"
     })
     assert res.status_code == 201
 
 
-# NOTE: Missing test for expired idempotency key behaviour.
-# ISSUE.md acceptance criteria requires: expired keys should result in a new charge.
-# This test is not yet implemented — flagged for code review.
+def test_expired_idempotency_key_creates_new_charge(client):
+    """
+    An expired idempotency key (> 24 hours old) must NOT return the cached result.
+    A new charge should be created instead.
+
+    Acceptance criterion from ISSUE.md: keys expire after 24 hours.
+    """
+    import json
+    from datetime import datetime, timedelta
+
+    key = "test-expired-key-xyz"
+    # Seed an idempotency key that's 25 hours old (expired)
+    expired_ts = (datetime.utcnow() - timedelta(hours=25)).strftime("%Y-%m-%d %H:%M:%S")
+    stale_response = json.dumps({"id": "old-payment-id", "amount": 9900, "currency": "usd",
+                                  "customer_id": "cust_exp", "status": "succeeded",
+                                  "description": None, "created_at": expired_ts})
+    with db_module.get_connection() as conn:
+        conn.execute(
+            "INSERT INTO idempotency_keys (idempotency_key, payment_response, created_at) VALUES (?, ?, ?)",
+            (key, stale_response, expired_ts),
+        )
+
+    # Request with expired key should process a NEW charge, not return the stale one
+    res = client.post("/api/payments", json={
+        "amount": 9900, "currency": "usd", "customer_id": "cust_exp"
+    }, headers={"Idempotency-Key": key})
+
+    assert res.status_code == 201
+    assert res.json()["id"] != "old-payment-id", "Expired key must not return the stale cached payment"

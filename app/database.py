@@ -28,9 +28,10 @@ def init_db():
                 created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # NOTE: Missing index on idempotency_keys.created_at — full table scan
-        # on expiry check at scale. Should add:
-        # CREATE INDEX IF NOT EXISTS idx_idempotency_created ON idempotency_keys(created_at)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_idempotency_created
+            ON idempotency_keys(created_at)
+        """)
         existing = conn.execute("SELECT COUNT(*) FROM payments").fetchone()[0]
         if existing == 0:
             _seed_demo_data(conn)
