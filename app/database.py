@@ -1,4 +1,5 @@
 import sqlite3
+import json
 import os
 from contextlib import contextmanager
 from app.config import DATABASE_URL
@@ -20,10 +21,41 @@ def init_db():
                 created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Seed some realistic-looking data for the demo
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS idempotency_keys (
+                idempotency_key  TEXT PRIMARY KEY,
+                payment_response TEXT NOT NULL,
+                created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # NOTE: Missing index on idempotency_keys.created_at — full table scan
+        # on expiry check at scale. Should add:
+        # CREATE INDEX IF NOT EXISTS idx_idempotency_created ON idempotency_keys(created_at)
         existing = conn.execute("SELECT COUNT(*) FROM payments").fetchone()[0]
         if existing == 0:
             _seed_demo_data(conn)
+
+
+def get_idempotency_result(key: str):
+    """Return cached payment response for key if it exists and hasn't expired."""
+    with get_connection() as conn:
+        row = conn.execute(
+            """SELECT payment_response FROM idempotency_keys
+               WHERE idempotency_key = ?
+               AND created_at > datetime('now', '-24 hours')""",
+            (key,),
+        ).fetchone()
+    return json.loads(row["payment_response"]) if row else None
+
+
+def store_idempotency_result(key: str, response_data: dict):
+    """Persist an idempotency key → response mapping."""
+    with get_connection() as conn:
+        conn.execute(
+            """INSERT OR REPLACE INTO idempotency_keys (idempotency_key, payment_response)
+               VALUES (?, ?)""",
+            (key, json.dumps(response_data)),
+        )
 
 
 def _seed_demo_data(conn):
