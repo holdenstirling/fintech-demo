@@ -47,29 +47,19 @@ This is not a product demo. It's a proof of value for a specific company with sp
 
 - [ ] `cd ~/fintech-demo && python3 -m uvicorn app.main:app --reload --port 8000`
 - [ ] Open http://localhost:8000 — verify dashboard loads and shows seeded transactions
-- [ ] Click "Simulate Network Retry" — verify red duplicate alert fires
-- [ ] Run `python3 -m pytest tests/ -v` — all 8 tests pass
+- [ ] Click "Run Security Audit" (amber button) — verify terminal animation opens and all 4 vulns appear
+- [ ] Click "Demo: Show Bug" (red button) — verify DUPLICATE badge and red alert appear
+- [ ] Click "Demo: Show Fix" (green button) — verify PROTECTED badge and green alert appear
+- [ ] Run `python3 -m pytest tests/ -v` — all 9 tests pass on feat branch, 6 on main
 - [ ] Open a second terminal tab in `~/fintech-demo` (for running Claude Code)
 - [ ] Have ISSUE.md open in a text editor for quick reference
-- [ ] If demoing code review: push `feat/duplicate-charge-fix` to GitHub, open PR
 - [ ] Test screen share on Google Meet before the call
 
-**GitHub PR setup (for code review segment):**
-```bash
-# Create repo on github.com first, then:
-cd ~/fintech-demo
-git remote add origin https://github.com/YOUR_USERNAME/fintech-demo.git
-git push -u origin main
-git push origin feat/duplicate-charge-fix
-# Open PR on GitHub: main ← feat/duplicate-charge-fix
-```
-
-**Fallback plan if GitHub isn't set up:**
-Skip the `/code-review:code-review` step. Instead, show the diff manually:
-```bash
-git diff main...feat/duplicate-charge-fix
-```
-And say: "In a real workflow, this is where we'd run `/code-review:code-review --comment` to post a review directly on the PR."
+**GitHub — already set up:**
+- Repo: https://github.com/holdenstirling/fintech-demo
+- PR #1: https://github.com/holdenstirling/fintech-demo/pull/1
+- main branch = bug present (starting point for live demo)
+- feat/duplicate-charge-fix = fix implemented (for code review beat)
 
 ---
 
@@ -260,12 +250,13 @@ acceptance criteria."
 > "Notice the hook fired automatically. Tests ran. All passing."
 
 *Run `pytest -v` to confirm:*
-> "Eight tests, all green. The duplicate charge test now asserts the same payment ID is returned on a retry — not two separate charges."
+> "Nine tests, all green. The duplicate charge tests now assert the same payment ID is returned on a retry — not two separate charges."
 
-**[Go back to dashboard. Click "Simulate Network Retry" again — now it should... still show the bug since the dashboard doesn't send an idempotency key.]*
+*Go back to dashboard. Click "Demo: Show Fix" (green button):*
+> "Watch this. Same payment request, sent twice. Same idempotency key on both. One charge created."
 
-Actually narrate:
-> "The API now supports idempotency keys. When a client sends the same key twice, it gets back the original response — no second charge. The Simulate Retry button in the dashboard is still sending requests without a key, which is the raw bug. The fix is in the API — clients need to adopt the key."
+*Green PROTECTED badge appears, Charges Prevented stat increments.*
+> "That's the fix. The API returns the original response on the retry — no second charge, no angry customer, no refund process."
 
 ---
 
@@ -478,8 +469,8 @@ git diff main...feat/duplicate-charge-fix
 
 | Branch | State | Purpose |
 |---|---|---|
-| `main` | No idempotency, 3 security vulns | Starting point for live "implement from scratch" demo |
-| `feat/duplicate-charge-fix` | Idempotency implemented, 2 known gaps | Pre-built for code review demo |
+| `main` | No idempotency, 4 security vulns, 6 tests | Starting point for live "implement from scratch" demo |
+| `feat/duplicate-charge-fix` | Idempotency implemented, 9 tests passing | Pre-built for code review demo |
 
 **Switch to main for live implementation demo:**
 ```bash
