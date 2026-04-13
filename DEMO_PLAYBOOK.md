@@ -196,31 +196,49 @@ This is a PCI-DSS regulated financial services application."
 *While Claude runs:*
 > "We haven't pointed it at any specific file. It's doing what a security reviewer does — reading the codebase with knowledge of what financial services applications need to get right."
 
-*After response — Claude will surface:*
-1. **Hardcoded API key in config.py** (`sk_live_4f8a2b1c9d...`)
-2. **Unauthenticated admin endpoint** (`/api/admin/payments` — no auth check, returns all payment records)
-3. **SQL injection in search** (`f"SELECT * ... WHERE customer_id = '{customer_id}'"`)
+*Or click the "Run Security Audit" button in the dashboard — same findings, more visual for the room.*
+
+*After response — Claude surfaces:*
+1. **3 hardcoded secrets in config.py** — PROCESSOR_API_KEY, WEBHOOK_SECRET, INTERNAL_API_KEY — all in git history
+2. **Unauthenticated admin endpoint** — `/api/admin/payments`, no auth check, returns full payment history
+3. **SQL injection in search** — f-string interpolation in WHERE clause
 
 *Narrate for the CTO:*
-> "Three issues. Any one of these would be a critical finding in a security review. The hardcoded key is a credential leak waiting to happen. The admin endpoint — anyone who knows the URL can pull your entire payment history with no authentication. The SQL injection is a direct path to data exfiltration."
+> "Five findings. Three of them are critical. Three production API keys committed directly to git history — every engineer who has ever cloned this repo has those credentials. That's a PCI-DSS violation and an FFIEC audit finding waiting to happen."
 
-> "Your security team would find these in a quarterly audit. Claude found them in 45 seconds."
+> "The admin endpoint — no authentication. Anyone who knows the URL gets your full payment history. The SQL injection is a direct path to data exfiltration."
 
-**[Pause for reaction. Let the CTO respond.]**
+> "Your security team would find these in a quarterly audit. Claude found them in 45 seconds. And it found all three hardcoded secrets — not just the obvious one."
+
+**[Pause. Let the CTO respond. Write down whatever they say.]*
 
 **[Callout for CTO]:**
-> "This isn't replacing your security review process. It's making sure these never reach it."
+> "This isn't replacing your security review process. It's making sure these never reach it. Your auditors see clean code. Your FFIEC exam goes smoothly."
 
 ---
 
-**[BEAT 3: Governance Hook — 30 seconds]**
+**[BEAT 3: Governance Hook — shown firing, not just described]**
 
-> "Before we fix anything, I want to show you something we set up for this team."
+*This beat works two ways — pick based on whether you're doing the live implementation:*
 
-*Show `.claude/settings.json`:*
-> "This is a governance hook. Every time Claude modifies production code, this fires automatically — it runs the test suite and reports back. Claude can see the result and adjust. This is how you maintain code quality without adding process overhead."
+**Option A — Live implementation (hook fires automatically):**
+When Claude edits any `.py` file in `/app/`, the hook fires in the terminal automatically. You'll see:
+```
+⛔  [FinTechCo Governance Hook] Code change detected in database.py
+    Running automated test suite...
+    9 passed, 1 warning in 0.05s
+    ✅ All tests passing - safe to continue
+```
+> "Watch — I didn't run the tests. The governance hook ran them automatically the moment Claude touched production code. That's your control mechanism. No engineer can bypass it."
 
-> "For your security team: this means every code change Claude makes is validated against your test suite before it proceeds. You can add any check here — linting, security scanning, compliance rules."
+**Option B — Show it statically (no live implementation):**
+*Open `.claude/settings.json` in editor*
+> "This file is committed to the repo. Every time Claude writes or edits a Python file in `/app/`, this hook fires — it runs the full test suite and reports back. Claude sees the result and adjusts. If tests fail, Claude fixes the issue before proceeding."
+
+> "For your security team: you can add any check here. Linting, secret scanning, compliance rules. One file, enforced across every engineer using Claude Code in this repo."
+
+**[Callout for CTO — say this slowly:]**
+> "This is what control looks like in practice. Not a policy document. A hook that actually runs. Every time. For everyone."
 
 ---
 
@@ -301,9 +319,18 @@ acceptance criteria."
 **Don't present numbers. Ask first:**
 > "Quick question — what's your average PR cycle time today? And what's your mean time to diagnose a P1 incident?"
 
-*(Write down their answers.)*
+*(Write down their answers. Then use these benchmarks to frame your response.)*
 
-> "Those are your baselines. Here's the framework I'd use to measure this."
+**Benchmark numbers to have ready (early enterprise pilots):**
+| Metric | Typical baseline | With Claude Code | Delta |
+|---|---|---|---|
+| PR cycle time | 4–6 hours | 2–3 hours | ~50% reduction |
+| New engineer → first meaningful commit | 5–10 days | 2–3 days | ~60% faster |
+| P1 incident diagnosis | 30–60 min | 10–20 min | ~60% faster |
+| Security findings per quarterly audit | 8–15 | 2–4 (rest caught pre-commit) | ~70% reduction |
+
+**How to use these:**
+> "If your PR cycle time is 5 hours, we typically see a 2–2.5 hour reduction in the first month. For your 120 engineers, that's roughly [5 hours × 120 engineers × 0.4 reduction × hourly rate] per sprint. I'd rather use your actual numbers though — what are you working with?"
 
 **Leading indicators (weeks 1–4):**
 - PR cycle time (open → merge)
@@ -324,11 +351,17 @@ acceptance criteria."
 
 > "I'm not recommending a company-wide rollout. I'm recommending a 5-person pilot for three weeks."
 
-| Phase | Who | What | Success Signal |
+| Phase | Who | Use Case | Success Signal |
 |---|---|---|---|
-| Week 1–3 | 2 engineers, 1 data scientist, 1 SRE, 1 PM | Install, use on real work, track time | "Would I use this daily?" |
-| Week 4–6 | Broader team | Expand based on pilot signal | Baseline vs. post metrics |
-| Week 7–12 | Company-wide | Enterprise agreement, CLAUDE.md rollout | ROI readout |
+| Week 1–3 | 2 SWEs (payments team) | Bug fixes, PR prep, onboarding to unfamiliar services | "Would I use this daily?" |
+| Week 1–3 | 1 SRE | Incident diagnosis — unfamiliar service, 2am scenario | Time to identify root cause |
+| Week 1–3 | 1 data scientist | Fraud model pipeline, API integration boilerplate | Hours saved on non-ML work |
+| Week 4–6 | Pilot team + 5 more | Expand scope, track PR cycle time delta | Baseline vs. post metrics |
+| Week 7–12 | All 180 engineers | Enterprise agreement, CLAUDE.md distributed via repo template | ROI readout to board |
+
+**Why SREs first:** Your 20 SREs managing payments infrastructure have the clearest ROI signal. Time between "alert fires" and "I know where to look" is measurable. If Claude Code cuts that from 45 minutes to 15, you have your number.
+
+**Why mixed cohort:** Keeps the pilot from looking like a "developer tool" to leadership. Data scientist + SRE involvement makes it a platform story.
 
 > "Setup for the pilot is 30 minutes total. I'll be on a call with whoever owns this from your side. No IT involvement required, no procurement — this is a trial."
 

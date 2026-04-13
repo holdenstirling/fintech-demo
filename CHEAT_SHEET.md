@@ -8,7 +8,14 @@
 cd ~/fintech-demo && git checkout feat/duplicate-charge-fix
 python3 -m uvicorn app.main:app --reload --port 8000
 ```
-Open http://localhost:8000 — click all 3 buttons to verify, then refresh to reset.
+Open http://localhost:8000 — verify all 3 demo buttons work:
+- "Run Security Audit" → all 5 vulns appear (3 CRITICAL + 2 HIGH, PCI-DSS & FFIEC labels)
+- "Demo: Show Bug" → DUPLICATE badge fires
+- "Demo: Show Fix" → PROTECTED badge + dollar amount on stat card
+- "Reset Demo" → everything clears
+
+**Verify governance hook fires:** In terminal, run `claude`, make a small edit to `app/config.py`.
+Look for: `⛔ [FinTechCo Governance Hook]` → `✅ All tests passing` in the terminal output.
 
 ---
 
@@ -21,7 +28,7 @@ Open http://localhost:8000 — click all 3 buttons to verify, then refresh to re
 | 0:12 | Security architecture slide (slow down for CTO) | Nothing |
 | 0:15 | Switch to browser — show dashboard | localhost:8000 |
 | 0:16 | **[BEAT 1]** Click "Run Security Audit" → let it run, stay quiet | Browser |
-| 0:18 | Narrate the 4 findings for the CTO | Browser |
+| 0:18 | Narrate the 5 findings — "3 production secrets in git history, PCI-DSS + FFIEC non-compliant" | Browser |
 | 0:20 | **[BEAT 2a]** Click "Demo: Show Bug" → DUPLICATE badge fires | Browser |
 | 0:21 | Switch to terminal — show ISSUE.md, paste prompt 3 | Terminal |
 | 0:22 | Claude implements fix — narrate while it runs | Terminal |
@@ -116,6 +123,24 @@ coding conventions, and the idempotency pattern we just implemented.
 > **Who's the right person on your team to own the pilot setup?**"
 
 *Get a name. Get a date. End the call.*
+
+---
+
+## THE THREE TEAMS — one line each
+
+**Software Engineers (120 engineers):** "They're not blocked on writing code. They're blocked on understanding code they didn't write. Onboarding to an unfamiliar service, debugging a distributed system, reviewing a 400-line PR. Claude Code eliminates that tax."
+
+**SREs (20 engineers):** "2am, alert fires, service owned by a team that's off. The time between 'something's wrong' and 'I know where to look' — that's where you measure ROI. We've seen that go from 45 minutes to 15."
+
+**Data Scientists (40 engineers):** "They're brilliant at fraud modeling. They're blocked on API glue, frontend components, and the boilerplate that has nothing to do with their actual work. Claude Code handles the scaffolding so they focus on the models."
+
+---
+
+## PRICING (when they ask)
+
+> "Claude Code is seat-based, similar to GitHub Copilot Enterprise in structure. For a 180-engineer org we'd work through an enterprise agreement — I can get you a number and the security documentation this week. What I'd suggest is starting the 5-person pilot under a trial arrangement so you have real usage data before any commercial conversation."
+
+*(Do not quote a number. Get them into the pilot first.)*
 
 ---
 

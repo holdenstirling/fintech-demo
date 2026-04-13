@@ -68,7 +68,7 @@
           <svg class="w-3.5 h-3.5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
           <span class="text-xs font-medium text-brand-400">Secured by Claude Code</span>
         </div>
-        <p class="text-xs text-slate-500 leading-relaxed">4 vulnerabilities found · FTC-4421 resolved</p>
+        <p class="text-xs text-slate-500 leading-relaxed">5 vulnerabilities found · FTC-4421 resolved</p>
       </div>
       <div class="flex items-center gap-2 px-3 py-2 bg-slate-800/60 rounded-lg">
         <span class="w-1.5 h-1.5 rounded-full bg-brand-500 pulse-dot"></span>
@@ -153,7 +153,7 @@
             <div class="space-y-1 pl-0.5">
               <div class="flex items-center gap-1.5">
                 <span class="w-1 h-1 rounded-full bg-red-400 shrink-0"></span>
-                <span class="text-xs text-slate-400">Hardcoded API key</span>
+                <span class="text-xs text-slate-400">3 hardcoded secrets</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="w-1 h-1 rounded-full bg-red-400 shrink-0"></span>
@@ -161,7 +161,7 @@
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="w-1 h-1 rounded-full bg-red-400 shrink-0"></span>
-                <span class="text-xs text-slate-400">SQL injection risk</span>
+                <span class="text-xs text-slate-400">SQL injection · PCI/FFIEC</span>
               </div>
             </div>
             <p class="text-xs font-mono text-slate-600 mt-2">~45 seconds</p>
@@ -510,7 +510,7 @@
       </div>
       <!-- Footer CTA -->
       <div x-show="auditDone" x-cloak x-transition class="mt-3 flex items-center justify-between px-1">
-        <p class="text-xs text-slate-600">These findings were detected in ~45 seconds. Manual audit: 2–3 days.</p>
+        <p class="text-xs text-slate-600">5 findings in ~45 seconds. Manual audit: 2–3 days. All 3 secrets are in git history — rotation required.</p>
         <button @click="auditOpen = false" class="text-xs px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium transition-colors">
           Continue demo →
         </button>
@@ -680,28 +680,31 @@
           });
 
           const lines = [
-            { delay: 0,    type: 'cmd',     text: '$ claude code --audit app/' },
-            { delay: 500,  type: 'info',    text: 'Claude Code v2.1.4 — Security Scan' },
-            { delay: 900,  type: 'info',    text: 'Scanning 6 files across app/...' },
+            { delay: 0,    type: 'cmd',     text: '$ claude code --audit app/ --compliance pci-dss,ffiec' },
+            { delay: 500,  type: 'info',    text: 'Claude Code v2.1.4 — Security & Compliance Scan' },
+            { delay: 900,  type: 'info',    text: 'Scanning 6 files across app/ · Frameworks: PCI-DSS, FFIEC' },
             { delay: 1400, type: 'scan',    text: '  app/__init__.py           ok' },
             { delay: 1700, type: 'scan',    text: '  app/config.py             ...' },
-            { delay: 2100, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:4',
+            { delay: 2100, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:9',
               text: 'Hardcoded secret — PROCESSOR_API_KEY exposed in source',
-              detail: '  sk_live_4f8a2b1c9d3e7f2a8b5c… committed to git history' },
-            { delay: 2700, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:7',
+              detail: '  sk_live_4f8a2b1c9d3e7f2a8b5c… PCI-DSS 3.4: secrets must not be stored in source' },
+            { delay: 2700, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:11',
               text: 'Hardcoded secret — WEBHOOK_SECRET exposed in source',
-              detail: '  whsec_FTCo_prod_9a3b2c1d8e7f… PCI-DSS violation' },
-            { delay: 3200, type: 'scan',    text: '  app/database.py           ok' },
-            { delay: 3500, type: 'scan',    text: '  app/payments.py           ok' },
-            { delay: 3800, type: 'scan',    text: '  app/main.py               ...' },
-            { delay: 4200, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:52',
+              detail: '  whsec_FTCo_prod_9a3b2c1d8e7f… FFIEC: credential exposure in version control' },
+            { delay: 3200, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:17',
+              text: 'Hardcoded secret — INTERNAL_API_KEY exposed in source',
+              detail: '  ftco_internal_svc_2024_xK9mN2pQ… all 3 secrets are in git history — rotation required' },
+            { delay: 3700, type: 'scan',    text: '  app/database.py           ok' },
+            { delay: 3950, type: 'scan',    text: '  app/payments.py           ok' },
+            { delay: 4200, type: 'scan',    text: '  app/main.py               ...' },
+            { delay: 4600, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:83',
               text: 'Unauthenticated admin endpoint — /api/admin/payments',
-              detail: '  No bearer token required. Any caller can read all transactions.' },
-            { delay: 4800, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:61',
-              text: 'SQL injection risk — customer_id interpolated unsafely',
-              detail: '  f-string used in WHERE clause. Use parameterized queries.' },
-            { delay: 5400, type: 'summary', text: '4 vulnerabilities found (2 CRITICAL, 2 HIGH)' },
-            { delay: 5800, type: 'fix',     text: 'Claude Code can fix all 4. Type: fix --all' },
+              detail: '  No bearer token. Any caller reads full payment history. FFIEC: access controls required.' },
+            { delay: 5200, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:66',
+              text: 'SQL injection — customer_id interpolated directly into query',
+              detail: '  f-string in WHERE clause. PCI-DSS 6.3.3: parameterized queries required.' },
+            { delay: 5800, type: 'summary', text: '5 vulnerabilities found (3 CRITICAL, 2 HIGH) — PCI-DSS & FFIEC non-compliant' },
+            { delay: 6200, type: 'fix',     text: 'Claude Code can remediate all 5. Each fix requires your review before commit.' },
           ];
 
           for (const line of lines) {
@@ -710,8 +713,8 @@
           this.auditRunning = false;
           this.auditDone = true;
           this.sessionStarted = true;
-          this.sessionItems.push({ icon: 'search', color: 'red', text: 'Scanned 6 files — 4 vulnerabilities found (2 CRITICAL, 2 HIGH)' });
-          this.sessionItems.push({ icon: 'clock', color: 'slate', text: 'Time: ~45 seconds vs. 2–3 days for a manual audit' });
+          this.sessionItems.push({ icon: 'search', color: 'red', text: 'Scanned 6 files — 5 vulnerabilities found (3 CRITICAL, 2 HIGH) · PCI-DSS & FFIEC non-compliant' });
+          this.sessionItems.push({ icon: 'clock', color: 'slate', text: 'Audit time: ~45 seconds vs. 2–3 days manually' });
         },
 
         showToast(message, type = 'success') {
