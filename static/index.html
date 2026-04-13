@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechCo — Payments</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: {
+            brand: { 50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a', 700:'#15803d' },
+            slate: { 850:'#0f1729', 900:'#0b1120', 950:'#060c18' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .fade-in { animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .pulse-ring { animation: pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+    @keyframes pulseRing { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+    ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:#0f1729; }
+    ::-webkit-scrollbar-thumb { background:#334155; border-radius:3px; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen" x-data="app()" x-init="init()">
+
+  <!-- ── Sidebar ── -->
+  <aside class="fixed inset-y-0 left-0 w-60 bg-slate-900 border-r border-slate-800 flex flex-col z-20">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-400 flex items-center justify-center shadow-lg">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-white tracking-tight">FinTechCo</p>
+        <p class="text-xs text-slate-500">Payments Platform</p>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium">
+        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        Payments
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 text-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 text-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Customers
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 text-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <!-- Env badge -->
+    <div class="px-4 pb-5">
+      <div class="flex items-center gap-2 px-3 py-2 bg-slate-800/60 rounded-lg">
+        <span class="w-2 h-2 rounded-full bg-brand-500 pulse-ring"></span>
+        <span class="text-xs text-slate-400 font-mono">production</span>
+        <span class="ml-auto text-xs text-slate-600">v2.1.4</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="ml-60 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-10 bg-slate-950/80 backdrop-blur border-b border-slate-800 px-8 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-semibold text-white">Payments</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Live transaction feed</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Demo: Simulate retry bug -->
+        <button
+          @click="simulateRetry()"
+          :disabled="loading"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium transition-all disabled:opacity-50">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Simulate Network Retry
+        </button>
+        <!-- Create payment -->
+        <button
+          @click="showModal = true"
+          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium transition-colors shadow-lg shadow-brand-900/30">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Payment
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 px-8 py-6 space-y-6">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Total Volume</p>
+          <p class="text-2xl font-semibold text-white mt-1.5 font-mono" x-text="formatAmount(stats.total_volume)">—</p>
+          <p class="text-xs text-brand-500 mt-1.5">↑ 12% this week</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Transactions</p>
+          <p class="text-2xl font-semibold text-white mt-1.5 font-mono" x-text="stats.count">—</p>
+          <p class="text-xs text-slate-500 mt-1.5">Last 24 hours</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Avg Charge</p>
+          <p class="text-2xl font-semibold text-white mt-1.5 font-mono" x-text="formatAmount(stats.avg_amount)">—</p>
+          <p class="text-xs text-slate-500 mt-1.5">Per transaction</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 relative overflow-hidden" :class="duplicates > 0 ? 'border-red-500/40' : ''">
+          <p class="text-xs font-medium uppercase tracking-wide" :class="duplicates > 0 ? 'text-red-400' : 'text-slate-500'">Duplicate Risk</p>
+          <p class="text-2xl font-semibold mt-1.5 font-mono" :class="duplicates > 0 ? 'text-red-400' : 'text-white'" x-text="duplicates">0</p>
+          <p class="text-xs mt-1.5" :class="duplicates > 0 ? 'text-red-400' : 'text-slate-500'" x-text="duplicates > 0 ? 'Duplicate charges detected!' : 'No duplicates'"></p>
+          <div x-show="duplicates > 0" class="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
+        </div>
+      </div>
+
+      <!-- Alert banner (shows when duplicate detected) -->
+      <div x-show="duplicates > 0" x-cloak x-transition class="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-sm fade-in">
+        <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div>
+          <p class="font-medium text-red-300">Duplicate charge detected</p>
+          <p class="text-red-400/80 mt-0.5">A network retry created a second charge for the same payment. <span class="font-mono text-red-300" x-text="'Customer ' + lastDuplicateCustomer"></span> has been billed twice. This is open as <span class="font-mono">FTC-4421</span>.</p>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div x-show="toast.show" x-cloak x-transition class="fixed bottom-6 right-6 z-50 fade-in">
+        <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium"
+             :class="toast.type === 'success' ? 'bg-brand-600 text-white' : 'bg-red-600 text-white'">
+          <svg x-show="toast.type === 'success'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <svg x-show="toast.type === 'error'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          <span x-text="toast.message"></span>
+        </div>
+      </div>
+
+      <!-- Transactions table -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <h2 class="text-sm font-semibold text-white">Recent Transactions</h2>
+          <button @click="fetchPayments()" class="text-xs text-slate-500 hover:text-white transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Refresh
+          </button>
+        </div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
+              <th class="text-left px-6 py-3 font-medium">ID</th>
+              <th class="text-left px-6 py-3 font-medium">Customer</th>
+              <th class="text-left px-6 py-3 font-medium">Description</th>
+              <th class="text-right px-6 py-3 font-medium">Amount</th>
+              <th class="text-left px-6 py-3 font-medium">Status</th>
+              <th class="text-left px-6 py-3 font-medium">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-if="paymentsList.length === 0">
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-slate-600 text-sm">No transactions yet</td>
+              </tr>
+            </template>
+            <template x-for="(p, i) in paymentsList" :key="p.id">
+              <tr class="border-b border-slate-800/60 hover:bg-slate-800/30 transition-colors"
+                  :class="p.isDuplicate ? 'bg-red-500/5' : (i === 0 ? 'fade-in' : '')">
+                <td class="px-6 py-3.5">
+                  <span class="font-mono text-xs text-slate-400" x-text="p.id.slice(0,8) + '…'"></span>
+                  <span x-show="p.isDuplicate" class="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">DUPLICATE</span>
+                </td>
+                <td class="px-6 py-3.5">
+                  <span class="font-mono text-xs text-slate-300" x-text="p.customer_id"></span>
+                </td>
+                <td class="px-6 py-3.5 text-slate-400 max-w-[160px] truncate" x-text="p.description || '—'"></td>
+                <td class="px-6 py-3.5 text-right">
+                  <span class="font-mono font-medium text-white" x-text="formatAmount(p.amount)"></span>
+                  <span class="ml-1 text-xs text-slate-600 uppercase" x-text="p.currency"></span>
+                </td>
+                <td class="px-6 py-3.5">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                        :class="p.status === 'succeeded' ? 'bg-brand-500/15 text-brand-400' : 'bg-red-500/15 text-red-400'">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="p.status === 'succeeded' ? 'bg-brand-400' : 'bg-red-400'"></span>
+                    <span x-text="p.status"></span>
+                  </span>
+                </td>
+                <td class="px-6 py-3.5 text-xs text-slate-500 font-mono" x-text="formatDate(p.created_at)"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── New Payment Modal ── -->
+  <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showModal = false">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="showModal = false"></div>
+    <div class="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl fade-in">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+        <h2 class="text-base font-semibold text-white">New Payment</h2>
+        <button @click="showModal = false" class="text-slate-500 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form @submit.prevent="submitPayment()" class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Customer ID</label>
+          <input x-model="form.customer_id" type="text" placeholder="cust_XXXX"
+                 class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 font-mono" required />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Amount</label>
+          <div class="flex gap-3">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+              <input x-model="form.amount_display" type="number" placeholder="0.00" step="0.01" min="0.01"
+                     class="w-full bg-slate-800 border border-slate-700 rounded-lg pl-7 pr-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-500" required />
+            </div>
+            <select x-model="form.currency" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
+              <option value="usd">USD</option>
+              <option value="eur">EUR</option>
+              <option value="gbp">GBP</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Description <span class="text-slate-600">(optional)</span></label>
+          <input x-model="form.description" type="text" placeholder="Invoice #, subscription, etc."
+                 class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-500" />
+        </div>
+        <div class="pt-2 flex gap-3">
+          <button type="button" @click="showModal = false" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 text-sm font-medium transition-colors">Cancel</button>
+          <button type="submit" :disabled="loading" class="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+            <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <span x-text="loading ? 'Processing…' : 'Charge Customer'"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function app() {
+      return {
+        paymentsList: [],
+        loading: false,
+        showModal: false,
+        duplicates: 0,
+        lastDuplicateCustomer: '',
+        toast: { show: false, message: '', type: 'success' },
+        stats: { total_volume: 0, count: 0, avg_amount: 0 },
+        form: { customer_id: '', amount_display: '', currency: 'usd', description: '' },
+
+        async init() {
+          await this.fetchPayments();
+          setInterval(() => this.fetchPayments(), 8000);
+        },
+
+        async fetchPayments() {
+          try {
+            const res = await fetch('/api/payments?limit=50');
+            const data = await res.json();
+            this.paymentsList = data;
+            this.computeStats(data);
+          } catch (e) {
+            console.error('Failed to fetch payments', e);
+          }
+        },
+
+        computeStats(data) {
+          const total = data.reduce((s, p) => s + p.amount, 0);
+          this.stats = {
+            total_volume: total,
+            count: data.length,
+            avg_amount: data.length ? Math.round(total / data.length) : 0,
+          };
+        },
+
+        async submitPayment() {
+          this.loading = true;
+          try {
+            const body = {
+              customer_id: this.form.customer_id,
+              amount: Math.round(parseFloat(this.form.amount_display) * 100),
+              currency: this.form.currency,
+              description: this.form.description || null,
+            };
+            const res = await fetch('/api/payments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            await this.fetchPayments();
+            this.showModal = false;
+            this.form = { customer_id: '', amount_display: '', currency: 'usd', description: '' };
+            this.showToast('Payment processed successfully', 'success');
+          } catch (e) {
+            this.showToast('Payment failed — check the console', 'error');
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async simulateRetry() {
+          // Simulate a network timeout scenario: the same payment is submitted twice
+          // with no idempotency key — this is the bug in ISSUE.md / FTC-4421
+          this.loading = true;
+          const customer = `cust_${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+          const payload = {
+            customer_id: customer,
+            amount: 9900,
+            currency: 'usd',
+            description: 'Invoice #8821 — network retry simulation',
+          };
+          try {
+            // Fire two identical requests — simulating a client retry after timeout
+            const [r1, r2] = await Promise.all([
+              fetch('/api/payments', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }),
+              fetch('/api/payments', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }),
+            ]);
+            const [p1, p2] = await Promise.all([r1.json(), r2.json()]);
+
+            // Mark both as duplicates in the UI
+            await this.fetchPayments();
+            this.paymentsList = this.paymentsList.map(p => {
+              if (p.id === p1.id || p.id === p2.id) return { ...p, isDuplicate: true };
+              return p;
+            });
+            this.duplicates += 2;
+            this.lastDuplicateCustomer = customer;
+            this.showToast(`⚠ ${customer} charged twice — $198.00 total instead of $99.00`, 'error');
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        showToast(message, type = 'success') {
+          this.toast = { show: true, message, type };
+          setTimeout(() => { this.toast.show = false; }, 4000);
+        },
+
+        formatAmount(cents) {
+          if (!cents && cents !== 0) return '—';
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+        },
+
+        formatDate(ts) {
+          if (!ts) return '—';
+          const d = new Date(ts.replace(' ', 'T') + 'Z');
+          return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        },
+      }
+    }
+  </script>
+</body>
+</html>

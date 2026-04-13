@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport sys, json\ndata = json.load(sys.stdin)\nfp = data.get('tool_input', {}).get('file_path', '') or ''\nif fp.endswith('.py') and '/app/' in fp:\n    import subprocess\n    print('\\n\\u26d4  [FinTechCo Governance Hook] Code change detected in ' + fp.split('/')[-1])\n    print('    Running automated test suite...')\n    r = subprocess.run(['python3', '-m', 'pytest', 'tests/', '-q', '--tb=short'],\n        capture_output=True, text=True, cwd='/Users/holdenottolini/fintech-demo')\n    lines = (r.stdout + r.stderr).strip().split('\\n')\n    for l in lines[-8:]:\n        print('    ' + l)\n    if r.returncode == 0:\n        print('    \\u2705 All tests passing - safe to continue')\n    else:\n        print('    \\u274c Tests failing - review before proceeding')\n\""
+          }
+        ]
+      }
+    ]
+  }
+}
