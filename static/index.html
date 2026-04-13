@@ -88,6 +88,12 @@
         <p class="text-xs text-slate-500">Live transaction feed</p>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Security Audit -->
+        <button @click="runAudit()" :disabled="auditRunning"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-400 text-xs font-medium transition-all disabled:opacity-50">
+          <svg class="w-3 h-3" :class="auditRunning ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span x-text="auditRunning ? 'Scanning…' : 'Run Security Audit'"></span>
+        </button>
         <!-- Demo: Show the Bug -->
         <button @click="simulateBug()" :disabled="loading"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 text-red-400 text-xs font-medium transition-all disabled:opacity-50">
@@ -397,6 +403,65 @@
     </div>
   </div>
 
+  <!-- ── Security Audit Modal ── -->
+  <div x-show="auditOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="auditOpen = false">
+    <div class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm" @click="auditOpen = false"></div>
+    <div class="relative w-full max-w-2xl fade-in">
+      <!-- Terminal chrome -->
+      <div class="bg-slate-800 rounded-t-xl border border-slate-700 px-4 py-3 flex items-center gap-2">
+        <div class="flex gap-1.5">
+          <div class="w-3 h-3 rounded-full bg-red-500/70"></div>
+          <div class="w-3 h-3 rounded-full bg-amber-500/70"></div>
+          <div class="w-3 h-3 rounded-full bg-brand-500/70"></div>
+        </div>
+        <span class="text-xs text-slate-500 font-mono ml-2">claude code — fintech-demo</span>
+        <button @click="auditOpen = false" class="ml-auto text-slate-600 hover:text-slate-400 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <!-- Terminal body -->
+      <div class="bg-slate-950 border-x border-b border-slate-700 rounded-b-xl p-5 font-mono text-sm min-h-[320px] max-h-[480px] overflow-y-auto space-y-1">
+        <template x-for="(line, i) in auditLines" :key="i">
+          <div class="fade-in leading-relaxed">
+            <!-- command -->
+            <p x-show="line.type === 'cmd'" class="text-brand-400" x-text="line.text"></p>
+            <!-- info -->
+            <p x-show="line.type === 'info'" class="text-slate-500 text-xs" x-text="line.text"></p>
+            <!-- scan ok -->
+            <p x-show="line.type === 'scan'" class="text-slate-600 text-xs" x-text="line.text"></p>
+            <!-- vuln block -->
+            <div x-show="line.type === 'vuln'" class="my-2 pl-3 border-l-2" :class="line.severity === 'CRITICAL' ? 'border-red-500' : 'border-amber-500'">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs px-1.5 py-0.5 rounded font-bold" :class="line.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'" x-text="line.severity"></span>
+                <span class="text-xs text-slate-500 font-mono" x-text="line.file"></span>
+              </div>
+              <p class="text-white text-xs" x-text="line.text"></p>
+              <p class="text-slate-500 text-xs mt-0.5" x-text="line.detail"></p>
+            </div>
+            <!-- summary -->
+            <div x-show="line.type === 'summary'" class="mt-3 pt-3 border-t border-slate-800">
+              <p class="text-red-400 font-medium" x-text="line.text"></p>
+            </div>
+            <!-- fix prompt -->
+            <div x-show="line.type === 'fix'" class="mt-2">
+              <p class="text-brand-400" x-text="line.text"></p>
+              <p class="text-slate-600 text-xs mt-1">Claude Code can remediate each finding automatically — with your review before any change is committed.</p>
+            </div>
+          </div>
+        </template>
+        <!-- blinking cursor while running -->
+        <span x-show="auditRunning" class="inline-block w-2 h-4 bg-brand-400 opacity-75 pulse-dot align-middle"></span>
+      </div>
+      <!-- Footer CTA -->
+      <div x-show="auditDone" x-cloak x-transition class="mt-3 flex items-center justify-between px-1">
+        <p class="text-xs text-slate-600">These findings were detected in ~45 seconds. Manual audit: 2–3 days.</p>
+        <button @click="auditOpen = false" class="text-xs px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium transition-colors">
+          Continue demo →
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     function app() {
       return {
@@ -409,6 +474,10 @@
         toast: { show: false, message: '', type: 'success' },
         stats: { total_volume: 0, count: 0 },
         form: { customer_id: '', amount_display: '', currency: 'usd', description: '' },
+        auditOpen: false,
+        auditLines: [],
+        auditRunning: false,
+        auditDone: false,
 
         async init() {
           await this.fetchPayments();
@@ -517,6 +586,49 @@
           } finally {
             this.loading = false;
           }
+        },
+
+        async runAudit() {
+          if (this.auditRunning) return;
+          this.auditOpen = true;
+          this.auditLines = [];
+          this.auditRunning = true;
+          this.auditDone = false;
+
+          const push = (line) => new Promise(r => {
+            setTimeout(() => { this.auditLines.push(line); r(); }, line.delay || 0);
+          });
+
+          const lines = [
+            { delay: 0,    type: 'cmd',     text: '$ claude code --audit app/' },
+            { delay: 500,  type: 'info',    text: 'Claude Code v2.1.4 — Security Scan' },
+            { delay: 900,  type: 'info',    text: 'Scanning 6 files across app/...' },
+            { delay: 1400, type: 'scan',    text: '  app/__init__.py           ok' },
+            { delay: 1700, type: 'scan',    text: '  app/config.py             ...' },
+            { delay: 2100, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:4',
+              text: 'Hardcoded secret — PROCESSOR_API_KEY exposed in source',
+              detail: '  sk_live_4f8a2b1c9d3e7f2a8b5c… committed to git history' },
+            { delay: 2700, type: 'vuln',    severity: 'CRITICAL', file: 'app/config.py:7',
+              text: 'Hardcoded secret — WEBHOOK_SECRET exposed in source',
+              detail: '  whsec_FTCo_prod_9a3b2c1d8e7f… PCI-DSS violation' },
+            { delay: 3200, type: 'scan',    text: '  app/database.py           ok' },
+            { delay: 3500, type: 'scan',    text: '  app/payments.py           ok' },
+            { delay: 3800, type: 'scan',    text: '  app/main.py               ...' },
+            { delay: 4200, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:52',
+              text: 'Unauthenticated admin endpoint — /api/admin/payments',
+              detail: '  No bearer token required. Any caller can read all transactions.' },
+            { delay: 4800, type: 'vuln',    severity: 'HIGH', file: 'app/main.py:61',
+              text: 'SQL injection risk — customer_id interpolated unsafely',
+              detail: '  f-string used in WHERE clause. Use parameterized queries.' },
+            { delay: 5400, type: 'summary', text: '4 vulnerabilities found (2 CRITICAL, 2 HIGH)' },
+            { delay: 5800, type: 'fix',     text: 'Claude Code can fix all 4. Type: fix --all' },
+          ];
+
+          for (const line of lines) {
+            await push(line);
+          }
+          this.auditRunning = false;
+          this.auditDone = true;
         },
 
         showToast(message, type = 'success') {
