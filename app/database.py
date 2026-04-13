@@ -4,7 +4,8 @@ import os
 from contextlib import contextmanager
 from app.config import DATABASE_URL
 
-DB_PATH = os.environ.get("DATABASE_URL", DATABASE_URL)
+# Use SQLITE_PATH env var to avoid collisions with Railway's DATABASE_URL (Postgres)
+DB_PATH = os.environ.get("SQLITE_PATH", DATABASE_URL)
 
 
 def init_db():
