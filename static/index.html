@@ -106,6 +106,12 @@
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Demo: Show Fix
         </button>
+        <!-- Reset Demo -->
+        <button @click="resetDemo()" x-show="sessionStarted" x-cloak
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-xs font-medium transition-all">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reset Demo
+        </button>
         <!-- New Payment -->
         <button @click="showModal = true"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium transition-colors shadow-lg shadow-brand-900/30">
@@ -268,7 +274,10 @@
         </div>
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden" :class="prevented > 0 ? 'border-brand-500/30' : ''">
           <p class="text-xs font-medium uppercase tracking-wide" :class="prevented > 0 ? 'text-brand-400' : 'text-slate-500'">Charges Prevented</p>
-          <p class="text-2xl font-semibold mt-1 font-mono" :class="prevented > 0 ? 'text-brand-400' : 'text-white'" x-text="prevented">0</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <p class="text-2xl font-semibold font-mono" :class="prevented > 0 ? 'text-brand-400' : 'text-white'" x-text="prevented">0</p>
+            <p x-show="prevented > 0" x-cloak class="text-sm font-mono font-medium text-brand-500" x-text="formatAmount(prevented * 9900)"></p>
+          </div>
           <p class="text-xs mt-1" :class="prevented > 0 ? 'text-brand-400/80' : 'text-slate-500'" x-text="prevented > 0 ? 'Idempotency working' : 'Try Demo: Show Fix'"></p>
           <div x-show="prevented > 0" class="absolute inset-0 bg-brand-500/5 pointer-events-none"></div>
         </div>
@@ -289,6 +298,53 @@
         <div>
           <p class="font-medium text-brand-300">Idempotency key prevented the duplicate charge</p>
           <p class="text-brand-400/70 text-xs mt-0.5">Both requests returned the same payment ID. Only one charge was created. This is the fix Claude Code implemented for <span class="font-mono">FTC-4421</span>.</p>
+        </div>
+      </div>
+
+      <!-- Session Summary -->
+      <div x-show="sessionStarted && sessionItems.length >= 2" x-cloak x-transition
+           class="rounded-xl border border-slate-700 overflow-hidden fade-in">
+        <div class="bg-slate-900 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span class="text-xs font-semibold text-white">Claude Code — Session Summary</span>
+          </div>
+          <span class="text-xs text-slate-600 font-mono">fintech-demo · feat/duplicate-charge-fix</span>
+        </div>
+        <div class="bg-slate-900/40 px-5 py-4 grid grid-cols-2 gap-x-8 gap-y-2">
+          <template x-for="(item, i) in sessionItems" :key="i">
+            <div class="flex items-start gap-2.5 fade-in">
+              <!-- check icon -->
+              <template x-if="item.icon === 'check'">
+                <div class="w-4 h-4 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-2 h-2 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+              </template>
+              <!-- search icon -->
+              <template x-if="item.icon === 'search'">
+                <div class="w-4 h-4 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-2 h-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </template>
+              <!-- bug icon -->
+              <template x-if="item.icon === 'bug'">
+                <div class="w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-2 h-2 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+              </template>
+              <!-- clock icon -->
+              <template x-if="item.icon === 'clock'">
+                <div class="w-4 h-4 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-2 h-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+              </template>
+              <p class="text-xs text-slate-400 leading-relaxed" x-text="item.text"></p>
+            </div>
+          </template>
+        </div>
+        <div class="bg-slate-900/30 border-t border-slate-800 px-5 py-2.5 flex items-center justify-between">
+          <p class="text-xs text-slate-600">This session ran in your terminal — no data left Anthropic after the call.</p>
+          <span class="text-xs text-brand-500 font-medium">Secured by Claude Code →</span>
         </div>
       </div>
 
@@ -478,6 +534,8 @@
         auditLines: [],
         auditRunning: false,
         auditDone: false,
+        sessionStarted: false,
+        sessionItems: [],
 
         async init() {
           await this.fetchPayments();
@@ -549,6 +607,10 @@
             );
             this.duplicates += 2;
             this.lastDuplicateCustomer = customer;
+            this.sessionStarted = true;
+            if (!this.sessionItems.find(i => i.text.includes('FTC-4421'))) {
+              this.sessionItems.push({ icon: 'bug', color: 'red', text: 'Reproduced FTC-4421 — duplicate charge on network retry ($198.00 billed instead of $99.00)' });
+            }
             this.showToast(`${customer} charged twice — $198.00 instead of $99.00`, 'error');
           } finally {
             this.loading = false;
@@ -580,12 +642,30 @@
             if (p1.id === p2.id) {
               this.paymentsList = this.paymentsList.map(p => p.id === p1.id ? { ...p, isPrevented: true } : p);
               this.prevented++;
-              this.duplicates = Math.max(0, this.duplicates - 0); // don't change bug count
+              this.sessionStarted = true;
+              const saved = this.formatAmount(this.prevented * 9900);
+              const existing = this.sessionItems.findIndex(i => i.text.startsWith('Fixed FTC-4421'));
+              const line = { icon: 'check', color: 'brand', text: `Fixed FTC-4421 — ${this.prevented} duplicate charge${this.prevented > 1 ? 's' : ''} prevented (${saved} saved)` };
+              if (existing >= 0) this.sessionItems[existing] = line;
+              else this.sessionItems.push(line);
               this.showToast(`Duplicate prevented — ${customer} charged only $99.00`, 'success');
             }
           } finally {
             this.loading = false;
           }
+        },
+
+        resetDemo() {
+          this.duplicates = 0;
+          this.prevented = 0;
+          this.auditDone = false;
+          this.auditLines = [];
+          this.auditRunning = false;
+          this.auditOpen = false;
+          this.sessionStarted = false;
+          this.sessionItems = [];
+          this.paymentsList = this.paymentsList.map(p => ({ ...p, isDuplicate: false, isPrevented: false }));
+          this.showToast('Demo reset — ready for next run', 'success');
         },
 
         async runAudit() {
@@ -629,6 +709,9 @@
           }
           this.auditRunning = false;
           this.auditDone = true;
+          this.sessionStarted = true;
+          this.sessionItems.push({ icon: 'search', color: 'red', text: 'Scanned 6 files — 4 vulnerabilities found (2 CRITICAL, 2 HIGH)' });
+          this.sessionItems.push({ icon: 'clock', color: 'slate', text: 'Time: ~45 seconds vs. 2–3 days for a manual audit' });
         },
 
         showToast(message, type = 'success') {
