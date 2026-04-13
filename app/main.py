@@ -1,17 +1,22 @@
-from fastapi import FastAPI, HTTPException, Query
+from contextlib import asynccontextmanager
+from typing import Optional, List
+from fastapi import FastAPI, HTTPException, Query, Header
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.models import PaymentRequest, PaymentResponse
 from app import payments
-from app.database import init_db, get_connection
-
-app = FastAPI(title="FinTechCo Payments API", version="2.1.4")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from app.database import init_db, get_connection, get_idempotency_result, store_idempotency_result
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
+    yield
+
+
+app = FastAPI(title="FinTechCo Payments API", version="2.1.4", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
@@ -23,23 +28,37 @@ async def serve_dashboard():
 
 # ── Payments API ──────────────────────────────────────────────────────────────
 
-@app.post("/api/payments", response_model=PaymentResponse, status_code=201)
-async def create_payment(payment: PaymentRequest):
+@app.post("/api/payments", status_code=201)
+async def create_payment(
+    payment: PaymentRequest,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+):
     """
-    Process a new payment charge.
+    Process a payment charge.
 
-    WARNING: No idempotency key support. Retried requests create duplicate charges.
-    See ISSUE.md — ticket FTC-4421.
+    Supports idempotency keys via the `Idempotency-Key` header.
+    Duplicate requests with the same key return the original response (HTTP 200).
+    First-time requests return HTTP 201.
     """
-    return payments.create_payment(payment)
+    if idempotency_key:
+        cached = get_idempotency_result(idempotency_key)
+        if cached:
+            return JSONResponse(content=cached, status_code=200)
+
+    result = payments.create_payment(payment)
+
+    if idempotency_key:
+        store_idempotency_result(idempotency_key, result.model_dump())
+
+    return result
 
 
-@app.get("/api/payments", response_model=list[PaymentResponse])
+@app.get("/api/payments", response_model=List[PaymentResponse])
 async def list_payments(limit: int = Query(50, le=200)):
     return payments.list_payments(limit)
 
 
-@app.get("/api/payments/search", response_model=list[PaymentResponse])
+@app.get("/api/payments/search", response_model=List[PaymentResponse])
 async def search_payments(customer_id: str):
     """Search payments by customer ID."""
     with get_connection() as conn:
@@ -61,7 +80,7 @@ async def get_payment(payment_id: str):
 
 # ── Admin ─────────────────────────────────────────────────────────────────────
 
-@app.get("/api/admin/payments", response_model=list[PaymentResponse])
+@app.get("/api/admin/payments", response_model=List[PaymentResponse])
 async def admin_list_all_payments():
     """
     Returns full payment history for all customers.
