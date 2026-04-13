@@ -26,18 +26,23 @@ Look for: `⛔ [FinTechCo Governance Hook]` → `✅ All tests passing` in the t
 | 0:00 | Agenda + discovery questions | Nothing |
 | 0:07 | Overview — Claude Code is agentic, not autocomplete | Nothing |
 | 0:12 | Security architecture slide (slow down for CTO) | Nothing |
-| 0:15 | Switch to browser — show dashboard | localhost:8000 |
-| 0:16 | **[BEAT 1]** Click "Run Security Audit" → let it run, stay quiet | Browser |
-| 0:18 | Narrate the 5 findings — "3 production secrets in git history, PCI-DSS + FFIEC non-compliant" | Browser |
-| 0:20 | **[BEAT 2a]** Click "Demo: Show Bug" → DUPLICATE badge fires | Browser |
-| 0:21 | Switch to terminal — show ISSUE.md, paste prompt 3 | Terminal |
-| 0:22 | Claude implements fix — narrate while it runs | Terminal |
-| 0:24 | Governance hook fires → tests run → 9 green | Terminal |
-| 0:25 | **[BEAT 2b]** Click "Demo: Show Fix" → PROTECTED badge | Browser |
-| 0:26 | Show CLAUDE.md — "your team's rules, in plain English" | Terminal/Editor |
-| 0:27 | Show .claude/settings.json — "the governance hook" | Terminal/Editor |
-| 0:28 | **[BEAT 3]** Run `/code-review:code-review` on PR #1 | Terminal |
-| 0:30 | Show DEMO_TODO.md — "this is what the session produced" | Editor |
+| 0:14 | Switch to browser — show dashboard, point to Customer Impact card (red, P1 open) | Browser |
+| 0:15 | *"Before I touch anything — let me show you what it's like to be new to this codebase"* | — |
+| 0:15 | **[BEAT 0]** Switch to terminal, paste Prompt 1 (codebase walkthrough) | Terminal |
+| 0:17 | Narrate while Claude runs: *"No meeting. No Slack thread. It's reading 7 files right now."* | Terminal |
+| 0:17:30 | **[BEAT 1]** Switch to browser — Click "Run Security Audit" → stay quiet | Browser |
+| 0:19:30 | Narrate 5 findings: *"3 production secrets in git history. PCI-DSS + FFIEC non-compliant."* | Browser |
+| 0:21 | **[BEAT 2a]** Click "Demo: Show Bug" → HTTP Trace appears, DUPLICATE badge fires | Browser |
+| 0:22 | *"This is cust_A1B2. They called your support line. Charged $99 twice."* Point to Impact card | Browser |
+| 0:22:30 | Switch to terminal — show ISSUE.md briefly, paste Prompt 3 | Terminal |
+| 0:23:30 | Claude implements fix — narrate: *"It's reading the ticket, planning the change, touching 4 files"* | Terminal |
+| 0:25 | Governance hook fires → 9 tests green → *"That hook just ran automatically"* | Terminal |
+| 0:25:30 | **[BEAT 2b]** Switch to browser — Click "Demo: Show Fix" → HTTP Trace updates | Browser |
+| 0:26:30 | Point to Customer Impact card turning green — *"cust_A1B2 is now correctly charged $99"* | Browser |
+| 0:27 | Show CLAUDE.md — *"plain English rules, enforced on every change, for every engineer"* | Editor |
+| 0:28 | Show .claude/settings.json — *"this is the governance hook that fired"* | Editor |
+| 0:29 | **[BEAT 3]** Run `/code-review:code-review` on PR #1 | Terminal |
+| 0:31 | Show DEMO_TODO.md — point to unchecked rollout items as your close setup | Editor |
 | 0:32 | Ask baseline questions: PR cycle time? Incident MTTR? | Nothing |
 | 0:33 | ROI framework — leading vs lagging indicators | Nothing |
 | 0:37 | Evaluation plan — 5-person pilot, 3 weeks | Nothing |
@@ -57,7 +62,7 @@ Look for: `⛔ [FinTechCo Governance Hook]` → `✅ All tests passing` in the t
 
 ---
 
-## 4 CLAUDE PROMPTS (copy-paste into terminal)
+## 4 CLAUDE PROMPTS (copy-paste into terminal — type slowly, don't paste)
 
 **Prompt 1 — Codebase walkthrough:**
 ```

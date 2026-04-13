@@ -254,6 +254,71 @@
         </div>
       </div>
 
+      <!-- ── Customer Impact ── -->
+      <div class="rounded-xl overflow-hidden border transition-colors duration-700"
+           :class="fixDemoed ? 'border-brand-500/30' : 'border-red-500/20'">
+        <div class="px-5 py-3 flex items-center justify-between border-b transition-colors duration-700"
+             :class="fixDemoed ? 'bg-brand-500/5 border-brand-500/15' : 'bg-red-500/5 border-red-500/15'">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wide transition-colors duration-700"
+                  :class="fixDemoed ? 'bg-brand-500/15 text-brand-400' : 'bg-red-500/15 text-red-400'"
+                  x-text="fixDemoed ? '✓ RESOLVED' : '⚠ P1 — ACTIVE'"></span>
+            <span class="text-xs font-semibold text-white">FTC-4421 — Duplicate Charge Incident</span>
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">tickets #48821 · #48834</span>
+          </div>
+          <span class="text-xs font-mono transition-colors duration-700"
+                :class="fixDemoed ? 'text-brand-500' : 'text-red-500/60'"
+                x-text="fixDemoed ? 'idempotency fix deployed' : 'reported 2026-04-08 · unassigned'"></span>
+        </div>
+        <div class="grid grid-cols-2 divide-x divide-slate-800/50 bg-slate-900/30">
+          <div class="px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                <span class="text-xs font-mono font-semibold text-slate-300">A1</span>
+              </div>
+              <div>
+                <p class="text-xs font-mono font-medium text-white">cust_A1B2</p>
+                <p class="text-xs text-slate-500 mt-0.5">$99.00 × 2 · Apr 8 · Ticket #48821</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-mono font-semibold transition-colors duration-700"
+                 :class="fixDemoed ? 'text-brand-400' : 'text-red-400'"
+                 x-text="fixDemoed ? '$99.00' : '$198.00'"></p>
+              <p class="text-xs mt-0.5 transition-colors duration-700"
+                 :class="fixDemoed ? 'text-brand-500/70' : 'text-red-500/70'"
+                 x-text="fixDemoed ? 'correct' : '$99 overcharge'"></p>
+            </div>
+          </div>
+          <div class="px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                <span class="text-xs font-mono font-semibold text-slate-300">E5</span>
+              </div>
+              <div>
+                <p class="text-xs font-mono font-medium text-white">cust_E5F6</p>
+                <p class="text-xs text-slate-500 mt-0.5">$199.00 × 2 · Apr 9 · Ticket #48834</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-mono font-semibold transition-colors duration-700"
+                 :class="fixDemoed ? 'text-brand-400' : 'text-red-400'"
+                 x-text="fixDemoed ? '$199.00' : '$398.00'"></p>
+              <p class="text-xs mt-0.5 transition-colors duration-700"
+                 :class="fixDemoed ? 'text-brand-500/70' : 'text-red-500/70'"
+                 x-text="fixDemoed ? 'correct' : '$199 overcharge'"></p>
+            </div>
+          </div>
+        </div>
+        <div class="px-5 py-2.5 border-t border-slate-800/50 flex items-center justify-between transition-colors duration-700"
+             :class="fixDemoed ? 'bg-brand-500/5' : 'bg-red-500/5'">
+          <p class="text-xs transition-colors duration-700"
+             :class="fixDemoed ? 'text-brand-400/80' : 'text-red-400/70'"
+             x-text="fixDemoed ? 'Idempotency keys prevent future duplicates — no new incidents since fix' : 'Total customer overcharge: $297.00 · Refunds pending · Customers waiting'"></p>
+          <p class="text-xs font-mono text-slate-600" x-text="fixDemoed ? 'feat/duplicate-charge-fix → merged' : 'ISSUE.md'"></p>
+        </div>
+      </div>
+
       <!-- ── Stats ── -->
       <div class="grid grid-cols-4 gap-3">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -298,6 +363,71 @@
         <div>
           <p class="font-medium text-brand-300">Idempotency key prevented the duplicate charge</p>
           <p class="text-brand-400/70 text-xs mt-0.5">Both requests returned the same payment ID. Only one charge was created. This is the fix Claude Code implemented for <span class="font-mono">FTC-4421</span>.</p>
+        </div>
+      </div>
+
+      <!-- ── HTTP Trace ── -->
+      <div x-show="traceVisible" x-cloak x-transition
+           class="rounded-xl overflow-hidden border fade-in"
+           :class="traceMode === 'bug' ? 'border-red-500/25' : 'border-brand-500/25'">
+        <div class="px-4 py-2.5 flex items-center gap-2.5 border-b"
+             :class="traceMode === 'bug' ? 'bg-red-500/5 border-red-500/15' : 'bg-brand-500/5 border-brand-500/15'">
+          <div class="flex gap-1.5 shrink-0">
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+          </div>
+          <span class="text-xs font-mono text-slate-500 flex-1">Network Inspector · POST /api/payments</span>
+          <span class="text-xs font-medium px-2 py-0.5 rounded transition-colors"
+                :class="traceMode === 'bug' ? 'bg-red-500/15 text-red-400' : 'bg-brand-500/15 text-brand-400'"
+                x-text="traceMode === 'bug' ? 'No Idempotency-Key — Bug Active' : 'Idempotency-Key Present — Fix Applied'"></span>
+        </div>
+        <div class="bg-[#080d17] px-6 py-4 font-mono text-xs space-y-0.5 min-h-[120px]">
+          <template x-for="(line, i) in traceLines" :key="i">
+            <div class="fade-in">
+              <p x-show="line.type === 'header'"
+                 class="text-slate-600 text-[11px] pb-2 pt-0.5 border-b border-slate-800/60 mb-2.5"
+                 x-text="'── ' + line.text"></p>
+              <div x-show="line.type === 'req'" class="flex items-baseline gap-2 py-0.5 leading-relaxed">
+                <span class="text-blue-400 shrink-0">→</span>
+                <span class="text-white font-medium" x-text="line.method"></span>
+                <span class="text-slate-300" x-text="line.path"></span>
+                <span class="text-slate-600 ml-auto text-[11px]" x-text="line.meta"></span>
+              </div>
+              <div x-show="line.type === 'idem'" class="flex items-baseline gap-2 py-0.5 pl-5">
+                <span class="text-purple-400/60 text-[11px]">Idempotency-Key:</span>
+                <span class="text-purple-300/80 text-[11px]" x-text="line.key"></span>
+                <span x-show="line.same" class="text-purple-400/40 text-[11px] italic">← same key</span>
+              </div>
+              <div x-show="line.type === 'res_new'" class="flex items-baseline gap-2 py-0.5 pl-5 leading-relaxed">
+                <span class="text-brand-400/60 shrink-0">←</span>
+                <span class="px-1.5 rounded bg-brand-500/15 text-brand-400 text-[11px] font-semibold">201 Created</span>
+                <span class="text-slate-400 font-mono" x-text="line.id"></span>
+                <span class="text-brand-400/60 text-[11px]" x-text="line.note"></span>
+              </div>
+              <div x-show="line.type === 'res_dup'" class="flex items-baseline gap-2 py-0.5 pl-5 leading-relaxed">
+                <span class="text-red-400 shrink-0">←</span>
+                <span class="px-1.5 rounded bg-red-500/15 text-red-400 text-[11px] font-semibold">201 Created</span>
+                <span class="text-red-300 font-mono" x-text="line.id"></span>
+                <span class="text-red-400 font-semibold text-[11px]">✗ DUPLICATE — new charge created</span>
+              </div>
+              <div x-show="line.type === 'res_ok'" class="flex items-baseline gap-2 py-0.5 pl-5 leading-relaxed">
+                <span class="text-brand-400 shrink-0">←</span>
+                <span class="px-1.5 rounded bg-brand-500/20 text-brand-300 text-[11px] font-semibold">200 OK</span>
+                <span class="text-brand-400 font-mono" x-text="line.id"></span>
+                <span class="text-brand-300 font-semibold text-[11px]">✓ PROTECTED — same ID, no new charge</span>
+              </div>
+              <div x-show="line.type === 'spacer'" class="h-2.5"></div>
+              <div x-show="line.type === 'total'"
+                   class="mt-2.5 pt-2.5 border-t border-slate-800/50 flex items-center justify-between">
+                <span class="font-semibold text-[11px]"
+                      :class="line.ok ? 'text-brand-300' : 'text-red-300'"
+                      x-text="line.text"></span>
+                <span class="text-slate-600 text-[11px]" x-text="line.sub"></span>
+              </div>
+            </div>
+          </template>
+          <span x-show="traceRunning" class="inline-block w-1.5 h-3 bg-slate-600 opacity-50 pulse-dot align-middle ml-1"></span>
         </div>
       </div>
 
@@ -536,6 +666,11 @@
         auditDone: false,
         sessionStarted: false,
         sessionItems: [],
+        traceVisible: false,
+        traceMode: null,
+        traceLines: [],
+        traceRunning: false,
+        fixDemoed: false,
 
         async init() {
           await this.fetchPayments();
@@ -612,6 +747,7 @@
               this.sessionItems.push({ icon: 'bug', color: 'red', text: 'Reproduced FTC-4421 — duplicate charge on network retry ($198.00 billed instead of $99.00)' });
             }
             this.showToast(`${customer} charged twice — $198.00 instead of $99.00`, 'error');
+            this.animateTrace('bug', { r1Id: p1.id, r2Id: p2.id, customer });
           } finally {
             this.loading = false;
           }
@@ -642,6 +778,7 @@
             if (p1.id === p2.id) {
               this.paymentsList = this.paymentsList.map(p => p.id === p1.id ? { ...p, isPrevented: true } : p);
               this.prevented++;
+              this.fixDemoed = true;
               this.sessionStarted = true;
               const saved = this.formatAmount(this.prevented * 9900);
               const existing = this.sessionItems.findIndex(i => i.text.startsWith('Fixed FTC-4421'));
@@ -649,10 +786,50 @@
               if (existing >= 0) this.sessionItems[existing] = line;
               else this.sessionItems.push(line);
               this.showToast(`Duplicate prevented — ${customer} charged only $99.00`, 'success');
+              this.animateTrace('fix', { r1Id: p1.id, r2Id: p2.id, customer, idemKey: idempotencyKey });
             }
           } finally {
             this.loading = false;
           }
+        },
+
+        async animateTrace(mode, data) {
+          this.traceVisible = true;
+          this.traceLines = [];
+          this.traceRunning = true;
+          this.traceMode = mode;
+          const push = (line) => new Promise(r => {
+            setTimeout(() => { this.traceLines.push(line); r(); }, line.delay || 0);
+          });
+          const keyShort = data.idemKey ? data.idemKey.slice(0, 13) + '…' : '';
+          const r1Short = data.r1Id.slice(0, 8) + '…';
+          const r2Short = data.r2Id.slice(0, 8) + '…';
+          if (mode === 'bug') {
+            const lines = [
+              { delay: 0,   type: 'header', text: 'No Idempotency-Key header · FTC-4421 active' },
+              { delay: 200, type: 'req',    method: 'POST', path: '/api/payments', meta: `${data.customer} · $99.00` },
+              { delay: 650, type: 'res_new', id: r1Short, note: '✓ payment created' },
+              { delay: 300, type: 'spacer' },
+              { delay: 50,  type: 'req',    method: 'POST', path: '/api/payments', meta: `${data.customer} · $99.00 · network retry` },
+              { delay: 650, type: 'res_dup', id: r2Short },
+              { delay: 550, type: 'total',  text: `${data.customer} billed $198.00 — should be $99.00`, sub: '$99.00 overcharge', ok: false },
+            ];
+            for (const line of lines) await push(line);
+          } else {
+            const lines = [
+              { delay: 0,   type: 'header', text: 'Idempotency-Key present · FTC-4421 fixed' },
+              { delay: 200, type: 'req',    method: 'POST', path: '/api/payments', meta: `${data.customer} · $99.00` },
+              { delay: 250, type: 'idem',   key: keyShort, same: false },
+              { delay: 650, type: 'res_new', id: r1Short, note: '✓ payment created' },
+              { delay: 300, type: 'spacer' },
+              { delay: 50,  type: 'req',    method: 'POST', path: '/api/payments', meta: `${data.customer} · $99.00 · network retry` },
+              { delay: 200, type: 'idem',   key: keyShort, same: true },
+              { delay: 700, type: 'res_ok',  id: r1Short },
+              { delay: 500, type: 'total',  text: `${data.customer} billed $99.00 — duplicate prevented`, sub: 'idempotency key matched', ok: true },
+            ];
+            for (const line of lines) await push(line);
+          }
+          this.traceRunning = false;
         },
 
         resetDemo() {
@@ -664,6 +841,11 @@
           this.auditOpen = false;
           this.sessionStarted = false;
           this.sessionItems = [];
+          this.traceVisible = false;
+          this.traceLines = [];
+          this.traceMode = null;
+          this.traceRunning = false;
+          this.fixDemoed = false;
           this.paymentsList = this.paymentsList.map(p => ({ ...p, isDuplicate: false, isPrevented: false }));
           this.showToast('Demo reset — ready for next run', 'success');
         },
