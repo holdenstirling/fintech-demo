@@ -3,6 +3,66 @@
 
 ---
 
+## 🎯 WHAT IS CLAUDE CODE — say this in the first 60 seconds of the overview
+
+> "Claude Code is an agentic coding assistant that runs in your terminal. Not autocomplete — it reads your entire codebase, understands structure and history, and takes multi-step actions. Think of it as the difference between a spell-checker and a senior engineer who just joined your team and already knows every file."
+
+**Three things it does that autocomplete can't:**
+1. Reads your whole codebase — not just the open file
+2. Plans multi-step changes before touching anything
+3. Validates its own work against your test suite automatically
+
+---
+
+## 💰 PRICING — will come up, have it ready
+
+> "Claude Code is $100/month per engineer on the Max plan. For a 5-person pilot that's $500 total — no procurement required, no IT ticket, no vendor security review to start. Enterprise pricing for 180 engineers is negotiated — I'll get you a proposal alongside the DPA this week."
+
+**If they push on cost:**
+> "The math we use with engineering leaders: if Claude Code saves each engineer 1 hour per day — conservative based on what we see — at a $150k loaded salary that's roughly $75/hour. $100/month pays for itself in 2 hours. The pilot tells you if that number holds for your team."
+
+---
+
+## 🔌 MCP / INTERNAL TOOLS — "what about our systems?"
+
+> "Claude Code connects to your internal tools via MCP — Model Context Protocol. Jira, Confluence, your internal APIs, your monitoring stack — all accessible from inside the session. Your engineer asks Claude to pull the Jira ticket, read the runbook, check the metrics — without leaving the terminal or copy-pasting. Setup is one config file per tool."
+
+**If they ask how hard it is to set up:**
+> "A Jira MCP server is about 20 lines of config. We have pre-built servers for the common tools. Custom internal APIs take a few hours. One engineer sets it up once, everyone on the team gets it."
+
+---
+
+## ⚔️ COMPETITIVE — Copilot, Cursor, Devin
+
+**vs. Copilot:**
+> "Copilot is excellent autocomplete — it makes writing new code faster. Claude Code makes understanding and changing existing systems faster. For the SRE at 2am debugging a service they've never touched, IDE autocomplete isn't the bottleneck. Codebase-wide understanding is. That's a different category."
+
+**vs. Cursor:**
+> "Cursor is an IDE replacement — great for greenfield development in a single file or project. Claude Code is a terminal agent that works across your entire repo simultaneously. For a 15-service incident, you need repo-wide reasoning, not a smarter text editor."
+
+**vs. Devin:**
+> "Devin is fully autonomous — it runs without a human in the loop. That's the pitch and also the risk in a regulated environment. Claude Code keeps the engineer in control at every step — every edit is shown before it applies, every change is validated before it proceeds. For a FFIEC exam, that distinction is the difference between a finding and a clean report."
+
+**vs. ChatGPT / general AI:**
+> "ChatGPT works on code you paste into a chat window. Claude Code reads your actual codebase, your git history, your test suite. It knows what changed last Tuesday and why. You can't paste 180 engineers worth of institutional knowledge into a chat box."
+
+---
+
+## 👥 THREE TEAMS — use this frame in the overview (0:09–0:12)
+
+FinTechCo has three engineering populations. Address each one directly:
+
+**Software Engineers (120 people):**
+> "The tax on your SWEs isn't writing code — it's understanding code they didn't write. A new engineer joining a payments team spends their first week in meetings and Slack messages before they touch a line. Claude Code cuts that to a day."
+
+**SREs (20 people):**
+> "Your SREs manage incidents at 2am in services owned by teams that are off. The time between 'alert fires' and 'I know where to look' is measurable. We see that go from 45 minutes to 15. That's the number your SRE lead will care about."
+
+**Data Scientists (40 people):**
+> "Your data scientists are blocked on boilerplate — API integrations, frontend dashboards, pipeline scaffolding. They have the ideas. They're waiting on engineering bandwidth that never comes. Claude Code closes that gap without adding headcount."
+
+---
+
 ## START (30 min before)
 ```bash
 pkill -f uvicorn
@@ -30,9 +90,10 @@ Open http://localhost:8000 — verify:
 | 0:00 | Agenda — frame the 40 min, confirm who's in the room | Nothing |
 | 0:02 | **Discovery** — ask Q1–Q5, listen more than you talk | Nothing |
 | 0:08 | Reflect back: *"What I'm hearing is X and Y…"* | Nothing |
-| 0:09 | Overview — Claude Code is agentic, not autocomplete | Nothing |
-| 0:12 | Security architecture — slow down here for CTO | Nothing |
-| 0:14 | Switch to browser — show dashboard. Point to red Impact card. *"This is your current state. P1 open. Two customers overcharged. Let me show you what a morning with Claude Code looks like."* | Browser |
+| 0:09 | **What is Claude Code** — say the one-liner. Three things it does that autocomplete can't. | Nothing |
+| 0:10 | **Three teams** — SWEs (understanding existing code), SREs (2am incidents), Data Scientists (boilerplate). One sentence each. | Nothing |
+| 0:11 | **Security architecture** — local execution, no training, approval required, hooks, SOC 2. Slow down here for CTO. | Nothing |
+| 0:13 | Switch to browser — show dashboard. Point to red Impact card. *"This is your current state. P1 open. Two customers overcharged. Let me show you what a morning with Claude Code looks like."* | Browser |
 | 0:15 | **[BEAT 0]** Terminal — paste Prompt 1 slowly | Terminal |
 | 0:15:30 | ⚡ **ESCAPE HATCH A** — *see below* — narrate while Claude runs | Terminal |
 | 0:17 | → **HEAD OF DT CALLOUT** — ask directly: *"What's your time from new hire to first meaningful commit?"* Let them answer. *"That just happened in 90 seconds."* | Terminal |
