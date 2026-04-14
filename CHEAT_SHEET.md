@@ -50,10 +50,10 @@ Open http://localhost:8000 — verify:
 | 0:28 | Editor — CLAUDE.md — *"Your team's rules. Plain English. Every engineer, every change."* | Editor |
 | 0:29 | Editor — settings.json — *"This is what fired. One file, committed to the repo."* | Editor |
 | 0:30 | **[BEAT 3]** Terminal — `/code-review:code-review` on PR #1 | Terminal |
-| 0:32 | Editor — DEMO_TODO.md → **CLOSE BRIDGE** — *see below* | Editor |
+| 0:32 | **[BEAT 4]** Browser — Rollout Plan card appears (visible after fix). Point to 3 phases. | Browser |
 | 0:34 | Ask baselines: *"What's your PR cycle time today? MTTR on a P1?"* | Nothing |
 | 0:36 | ROI framework — use their numbers | Nothing |
-| 0:38 | Evaluation plan — 5-person pilot, 3 weeks | Nothing |
+| 0:38 | Point to 3 unchecked items at bottom of Rollout card → **CLOSE** | Browser |
 | 0:39 | **CLOSE** — *see below* | Nothing |
 
 ---
@@ -121,20 +121,20 @@ Stop. Look up. Say:
 
 ---
 
-## 🌉 CLOSE BRIDGE — DEMO_TODO → next steps (0:32)
+## 🌉 CLOSE BRIDGE — Rollout card → next steps (0:32)
 
-Open DEMO_TODO.md on screen. Let them read it for 5 seconds. Then:
+Switch to browser. The **Evaluation Plan card** appeared the moment the fix was demonstrated. Point to the three-phase grid:
 
-> "This is what the session produced — automatically. Security findings, bug fixed, tests written, code reviewed, deployment config generated."
+> "This is how 180 engineers get access to what you just watched. Phase 1 is 5 people. Three weeks. No procurement, no IT ticket. I'll be on a 30-minute setup call with whoever you designate — they're running before we hang up."
 
-Point to the **unchecked items** at the bottom:
-```
-- [ ] Schedule Pilot Week 1 kickoff with 5-engineer cohort
-- [ ] Set up metrics baseline (PR cycle time, incidents per sprint)
-- [ ] 6-week readout scheduled with Head of DT
-```
+Walk through the phases:
+- **Phase 1 (Week 1–3):** 2 SWEs, 1 SRE, 1 data scientist, 1 senior engineer who owns CLAUDE.md. These are the signal cohort.
+- **Phase 2 (Week 4–6):** 15 engineers. CLAUDE.md distributed via repo template — no per-engineer config. Every team that adopts Claude Code inherits your governance automatically.
+- **Phase 3 (Week 7–12):** All 180. Enterprise agreement, compliance documentation, FFIEC evidence in hand.
 
-> "These three items don't require a procurement decision. They're a calendar invite and an agreement to measure. That's all I'm asking for today."
+Point to the **three unchecked items** at the bottom of the card:
+
+> "These three items are all I'm asking for today. They're calendar invites and an agreement to measure — not a procurement decision."
 
 **Pause.** Let it land.
 
@@ -229,7 +229,7 @@ PCI-DSS and FFIEC regulated financial services application.
 
 ## CLOSE (0:39)
 
-Point to DEMO_TODO.md unchecked items on screen.
+Point to the three unchecked items on the Rollout Plan card in the browser.
 
 > "These three items are all I'm asking for.
 > **This week:** I send you the security overview and data processing agreement for your legal team.
@@ -242,6 +242,59 @@ Point to DEMO_TODO.md unchecked items on screen.
 
 ---
 
+## ❓ HARD QUESTIONS — answers you say, nothing to show
+
+**"Our code can't leave our environment."**
+> "It doesn't. Claude Code runs in your terminal. Only the session prompt goes over the wire — the source files are read locally by the CLI and included in context. Nothing is persisted on Anthropic's side after the session ends. We also have private deployment configurations for air-gapped environments. What specific framework are you operating under? I want to make sure I give you the right documentation."
+
+**"Are you training on our code?"**
+> "Contractually prohibited. Not policy — it's in the agreement. I'll send you the specific clause today."
+*Never say "I think" here. Be crisp.*
+
+**"What stops it from making a wrong change?"**
+> "Nothing applies without display. Every edit Claude makes is shown to the engineer before it's applied — no silent auto-apply. And the governance hook you saw fires automatically. If a test fails, Claude sees it and fixes the issue in the same session. Blast radius is always visible and always reversible before it hits version control."
+→ *If they push back: show settings.json again. Point to the hook. "This is what actually runs."*
+
+**"How do we audit what Claude Code did?"**
+> "Every tool call is logged in the session transcript. CLAUDE.md becomes the policy of record — committed to git, versioned, auditable. And git history is unchanged. Every commit is still attributed to an engineer. Your auditors see a clean trail."
+
+**"What does 'agentic' mean for our risk posture?"**
+> "Agentic means Claude plans multi-step changes before acting. For you that means it reads the ticket, reads the affected files, reads the tests — then proposes an approach before touching anything. It surfaces blast radius before the change, not after. That's the opposite of a risk increase."
+
+**"How does CLAUDE.md actually get to 180 engineers?"**
+> "You commit it to a repo template — every new repo your team creates inherits it automatically. For existing repos, one PR. Every engineer who runs Claude Code in that repo gets your governance on day one. No per-engineer config, no training session required."
+→ *Show CLAUDE.md in editor if you haven't yet. Point to it: "This is the file. Plain English. Any engineer can read it."*
+
+**"We already have Copilot."**
+> "Copilot makes writing new code faster. Claude Code makes understanding and changing existing systems faster. The SRE at 2am debugging a service they've never touched doesn't need autocomplete — they need to understand the blast radius before they touch anything. Copilot doesn't read a codebase, plan a multi-file change, and validate it against your test suite. That's a different category."
+
+**"My engineers won't adopt it."**
+> "The skeptics become the heaviest users by week 4 — consistently. The pitch isn't 'use AI instead of thinking.' It's 'stop spending 3 hours reading code before you can start the task you were hired for.' Once an engineer sees the codebase walkthrough run, they stop asking whether it works."
+
+**"We need to go through procurement."**
+> "Understood — we have an enterprise agreement template designed for FFIEC environments that's moved quickly at similar firms. Tell me who owns vendor security assessments and I'll get them what they need this week. The pilot itself doesn't require procurement — that's the point of starting there."
+
+---
+
+## 📊 ROI NUMBERS — have these ready, use their numbers first
+
+Ask: *"What's your PR cycle time today? MTTR on a P1?"* Write down their answer. Then:
+
+| Metric | Typical baseline | With Claude Code |
+|---|---|---|
+| PR cycle time | 4–6 hours | 2–3 hours (~50% reduction) |
+| New hire → first meaningful commit | 5–10 days | 2–3 days (~60% faster) |
+| P1 incident diagnosis | 30–60 min | 10–20 min (~60% faster) |
+| Security findings at quarterly audit | 8–15 | 2–4 (rest caught pre-commit) |
+
+**If they give you a number, use it:**
+> "If your PR cycle time is 5 hours, we typically see a 2–2.5 hour reduction in the first month. For 120 engineers — 5 hours × 120 × 0.4 reduction × hourly rate — that's meaningful in the first sprint. I'd rather use your actual numbers in the readout."
+
+**SRE story for FinTechCo specifically:**
+> "Your 20 SREs managing payments infrastructure — the time between 'alert fires' and 'I know where to look' is measurable. If Claude Code cuts that from 45 minutes to 15, you have your number before week 3 of the pilot."
+
+---
+
 ## IF THINGS GO WRONG
 
 | Problem | What to do |
@@ -251,5 +304,6 @@ Point to DEMO_TODO.md unchecked items on screen.
 | /code-review not working | `git diff main...feat/duplicate-charge-fix` — *"This is the diff the review covers"* |
 | Tests fail during hook | *"This is exactly what the hook is for — it caught it before production"* |
 | Wrong branch | `git checkout feat/duplicate-charge-fix` |
-| Discovery runs long (10+ min) | Cut CLAUDE.md walk-through — go straight from governance hook to DEMO_TODO close bridge |
+| Discovery runs long (10+ min) | Cut CLAUDE.md walk-through — go straight from governance hook to Rollout card |
 | Running short at 0:35 | Ask: *"What questions haven't I answered?"* — executives always have one |
+| Rollout card not showing | Click "Demo: Show Fix" — card appears when fixDemoed becomes true |
