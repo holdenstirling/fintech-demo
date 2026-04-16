@@ -105,7 +105,7 @@ Mirror back what they told you.
 ---
 
 ### Slide: What You Just Saw (1 min)
-> "In 12 minutes: a junior engineer onboarded to an unfamiliar codebase, caught a formatting bug, diagnosed and resolved a P1 incident, and we saw how the standards that prevented it from being worse are encoded in a single file every engineer inherits automatically. That's the day-to-day."
+> "In 13 minutes: a junior engineer onboarded to an unfamiliar codebase, caught a formatting bug, diagnosed and resolved a P1 incident, pushed a PR for team review, and we saw how the standards that prevented it from being worse are encoded in a single file every engineer inherits automatically. That's the day-to-day."
 
 ---
 
@@ -169,7 +169,7 @@ Stop talking. Wait for an answer.
 ### WHEN TO SIMULATE THE P1
 > Click "Simulate P1 Incident" **after** Prompt 2 (visual bug) is fixed and you've refreshed the browser.
 >
-> Sequence: Prompt 1 → Prompt 2 → **refresh browser** (amounts now correct) → say transition line → **click P1 button** → Prompt 3 → Prompt 4 → watch dashboard resolve.
+> Sequence: Prompt 1 → Prompt 2 → **refresh browser** (amounts now correct) → say transition line → **click P1 button** → Prompt 3 → Prompt 4 → watch dashboard resolve → Prompt 5 → green PR banner appears.
 >
 > Do NOT click it before the bug fix. You want the dashboard clean and healthy right before the P1 hits. The contrast is the point.
 
@@ -271,6 +271,25 @@ Let it land.
 
 ---
 
+### Prompt 5: Push PR for Review (1.5 min)
+> "Fix works. Tests pass. In a regulated environment, you don't push straight to production."
+
+```
+Push a PR for this fix so the team can review it.
+```
+
+**While Claude runs (~20 sec):**
+> "Branch, commit, push, open the PR on GitHub. The same workflow your engineers already follow — Claude just handles the mechanics."
+
+**After response — green PR banner appears on dashboard within 3 seconds:**
+> "Dashboard picked it up. The team can see there's an open PR for the fix before they even check Slack."
+
+Point at the PR banner — title, PR number, link to GitHub.
+
+> "That's the full loop: detect, diagnose, fix, test, and ship for review. All within the guardrails."
+
+---
+
 ### Governance (2.5 min — no Claude, you talk)
 Open `CLAUDE.md` in the editor.
 
@@ -297,8 +316,9 @@ Open `CLAUDE.md` in the editor.
 | Prompt 3: Diagnose | 5:20–7:15 | Yes (~45s) |
 | Prompt 4: Fix + tests | 7:15–9:00 | Yes (~45s) |
 | Watch dashboard resolve | 9:00–9:30 | No — stay silent |
-| Governance / CLAUDE.md | 9:30–12:00 | No |
-| Buffer | 12:00–12:30 | — |
+| Prompt 5: Push PR | 9:30–11:00 | Yes (~20s) + PR banner appears |
+| Governance / CLAUDE.md | 11:00–13:00 | No |
+| Buffer | 13:00–13:30 | — |
 
 ---
 
@@ -311,6 +331,7 @@ Open `CLAUDE.md` in the editor.
 | P1 button greyed out at start | Server wasn't restarted. `ctrl+c` → `rm payments.db` → `uvicorn app.main:app --reload` |
 | Amounts showing correctly at start (bug not active) | The formatAmount bug may have been fixed. Check `static/index.html` — the `/ 100` needs to be removed from `formatAmount()` |
 | Table is empty | Old `payments.db` has data, `init_db()` didn't reseed. Delete it and restart. |
+| PR banner doesn't appear | Dashboard polls every 3s — wait one cycle. If still missing, server may not have the latest main. Restart with `--reload`. |
 | Claude gives unexpected answer | Rephrase once. If still off, move on — don't spiral. |
 
 ---
@@ -356,4 +377,9 @@ Diagnose what's causing this and where in the code the problem is.
 ```
 PROMPT 4 — P1 FIX
 Fix it. Make sure all tests pass.
+```
+
+```
+PROMPT 5 — PUSH PR
+Push a PR for this fix so the team can review it.
 ```
