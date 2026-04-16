@@ -1,12 +1,15 @@
 """
 Core payment processing logic.
 """
+import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 from app.database import get_connection
 from app.models import PaymentRequest, PaymentResponse
 from app import processor
+
+logger = logging.getLogger(__name__)
 
 IDEMPOTENCY_KEY_TTL_HOURS = 24
 
@@ -27,13 +30,24 @@ def create_payment(
         if existing:
             return existing, True
 
-    proc_result = processor.charge(
-        amount=payment.amount,
-        currency=payment.currency.value,
-        customer_id=payment.customer_id,
-    )
-
     payment_id = str(uuid.uuid4())
+    stable_key = idempotency_key or payment_id
+
+    try:
+        proc_result = processor.charge(
+            amount=payment.amount,
+            currency=payment.currency.value,
+            customer_id=payment.customer_id,
+            idempotency_key=stable_key,
+        )
+    except processor.ChargeRejectedError:
+        raise
+    except processor.ChargeStateUnknownError:
+        logger.error(
+            "Charge outcome unknown: payment_id=%s customer_id=%s amount=%s",
+            payment_id, payment.customer_id, payment.amount,
+        )
+        raise
 
     with get_connection() as conn:
         conn.execute(
