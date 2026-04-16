@@ -397,8 +397,7 @@
 
         formatAmount(cents) {
           if (!cents && cents !== 0) return '—';
-          // BUG: missing cents-to-dollars conversion — displays raw cents as dollars
-          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents);
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
         },
 
         formatDate(ts) {
