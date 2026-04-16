@@ -27,13 +27,26 @@ def create_payment(
         if existing:
             return existing, True
 
-    proc_result = processor.charge(
-        amount=payment.amount,
-        currency=payment.currency.value,
-        customer_id=payment.customer_id,
-    )
-
     payment_id = str(uuid.uuid4())
+    # Use a stable key for the processor: the application-level idempotency key
+    # if provided, otherwise the payment ID. This ensures retries to the
+    # processor are recognized as the same charge (see FTC-4421).
+    processor_idempotency_key = idempotency_key or payment_id
+
+    try:
+        proc_result = processor.charge(
+            amount=payment.amount,
+            currency=payment.currency.value,
+            customer_id=payment.customer_id,
+            idempotency_key=processor_idempotency_key,
+        )
+    except Exception as e:
+        import logging
+        logging.error(
+            "Processor charge outcome unknown for payment_id=%s customer_id=%s amount=%d: %s",
+            payment_id, payment.customer_id, payment.amount, e,
+        )
+        raise
 
     with get_connection() as conn:
         conn.execute(
