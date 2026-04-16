@@ -8,12 +8,16 @@ from app.config import PROCESSOR_API_KEY, PROCESSOR_BASE_URL
 from app.models import ProcessorResponse
 
 
-def charge(amount: int, currency: str, customer_id: str) -> ProcessorResponse:
+def charge(amount: int, currency: str, customer_id: str, idempotency_key: str = "") -> ProcessorResponse:
     """
     Submit a charge to the external payment processor.
 
     In production this calls the real processor API. For the demo
     environment we simulate the response without a live network call.
+
+    idempotency_key must be a stable value (payment ID or application-level
+    idempotency key) so that retries to the processor are recognized as the
+    same charge. Never pass a fresh uuid4() here.
     """
     # Simulate the outbound API call structure so the code is realistic
     payload = {
@@ -25,7 +29,7 @@ def charge(amount: int, currency: str, customer_id: str) -> ProcessorResponse:
     headers = {
         "Authorization": f"Bearer {PROCESSOR_API_KEY}",
         "Content-Type": "application/json",
-        "Idempotency-Key": str(uuid.uuid4()),  # processor-level, not our layer
+        "Idempotency-Key": idempotency_key,
     }
 
     # --- Real call (commented out to avoid live network in demo) ---
