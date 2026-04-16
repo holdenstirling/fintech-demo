@@ -16,6 +16,7 @@ from app.config import INTERNAL_API_KEY
 _server_start: str = datetime.utcnow().isoformat()
 _p1_active: bool = False
 _p1_customer: str = ""
+_pr_info: Optional[dict] = None
 
 
 def _require_bearer(authorization: Optional[str]) -> None:
@@ -143,6 +144,7 @@ async def get_status():
         "incident": "FTC-4421" if _p1_active else None,
         "customer": _p1_customer,
         "server_start": _server_start,
+        "pr": _pr_info,
     }
 
 
@@ -174,3 +176,23 @@ async def simulate_p1(authorization: Optional[str] = Header(None)):
         "charge_2": result2.id,
         "message": f"P1 active: {customer} charged $198.00 instead of $99.00",
     }
+
+
+@app.post("/api/notify-pr")
+async def notify_pr(
+    body: dict,
+    authorization: Optional[str] = Header(None),
+):
+    """Notify the dashboard that a PR has been opened for review.
+    Called after `gh pr create` to drive the approval banner in the UI.
+    Resets on server restart (same as P1 state).
+    """
+    _require_bearer(authorization)
+    global _pr_info
+    _pr_info = {
+        "number": body.get("number"),
+        "title": body.get("title"),
+        "url": body.get("url"),
+        "status": body.get("status", "open"),
+    }
+    return _pr_info

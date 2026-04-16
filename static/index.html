@@ -144,6 +144,17 @@
         </div>
       </div>
 
+      <!-- PR approval banner (server-driven via /api/notify-pr) -->
+      <div x-show="prInfo" x-cloak x-transition class="flex items-start gap-3 p-4 bg-brand-500/10 border border-brand-500/30 rounded-xl text-brand-300 text-sm fade-in">
+        <svg class="w-5 h-5 text-brand-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <p class="font-medium text-brand-300">PULL REQUEST · <span x-text="prInfo?.title" class="font-mono"></span></p>
+          <p class="text-brand-400/80 mt-0.5">PR <span class="font-mono text-brand-300">#<span x-text="prInfo?.number"></span></span> is open for review.
+            <a :href="prInfo?.url" target="_blank" class="underline hover:text-white transition-colors">View on GitHub &rarr;</a>
+          </p>
+        </div>
+      </div>
+
       <!-- Toast -->
       <div x-show="toast.show" x-cloak x-transition class="fixed bottom-6 right-6 z-50 fade-in">
         <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium"
@@ -270,6 +281,7 @@
         duplicates: 0,
         p1Active: false,
         p1Customer: '',
+        prInfo: null,
         successRate: 99.2,
         serverStart: null,
         toast: { show: false, message: '', type: 'success' },
@@ -332,6 +344,7 @@
             this.p1Active = data.p1_active;
             this.successRate = data.success_rate;
             if (data.customer) this.p1Customer = data.customer;
+            this.prInfo = data.pr || null;
           } catch (e) {
             // Server restarting after fix — will reconnect on next poll
           }
