@@ -1,19 +1,32 @@
 """
 Core payment processing logic.
-
-NOTE: This module does not implement idempotency keys. If a client submits
-the same payment request twice (e.g. due to a network timeout and retry),
-two separate charges will be created. See ISSUE.md for the open ticket.
 """
 import uuid
-from typing import List, Optional
+from datetime import datetime, timedelta
+from typing import List, Optional, Tuple
 from app.database import get_connection
 from app.models import PaymentRequest, PaymentResponse
 from app import processor
 
+IDEMPOTENCY_KEY_TTL_HOURS = 24
 
-def create_payment(payment: PaymentRequest) -> PaymentResponse:
-    """Process a payment: charge the processor, persist the record, return the result."""
+
+def create_payment(
+    payment: PaymentRequest,
+    idempotency_key: Optional[str] = None,
+) -> Tuple[PaymentResponse, bool]:
+    """
+    Process a payment charge.
+
+    Returns a (PaymentResponse, is_duplicate) tuple. is_duplicate is True when
+    an idempotency key matches a non-expired prior request; the original response
+    is returned and no new charge is issued. is_duplicate is False for new requests.
+    """
+    if idempotency_key:
+        existing = _lookup_idempotency_key(idempotency_key)
+        if existing:
+            return existing, True
+
     proc_result = processor.charge(
         amount=payment.amount,
         currency=payment.currency.value,
@@ -36,11 +49,30 @@ def create_payment(payment: PaymentRequest) -> PaymentResponse:
                 proc_result.processor_id,
             ),
         )
+        if idempotency_key:
+            conn.execute(
+                "INSERT OR REPLACE INTO idempotency_keys (key, payment_id) VALUES (?, ?)",
+                (idempotency_key, payment_id),
+            )
         row = conn.execute(
             "SELECT * FROM payments WHERE id = ?", (payment_id,)
         ).fetchone()
 
-    return _row_to_response(row)
+    return _row_to_response(row), False
+
+
+def _lookup_idempotency_key(key: str) -> Optional[PaymentResponse]:
+    """Return the original PaymentResponse if the key exists and has not expired."""
+    expiry = datetime.utcnow() - timedelta(hours=IDEMPOTENCY_KEY_TTL_HOURS)
+    with get_connection() as conn:
+        row = conn.execute(
+            """SELECT payment_id FROM idempotency_keys
+               WHERE key = ? AND created_at > ?""",
+            (key, expiry.strftime("%Y-%m-%d %H:%M:%S")),
+        ).fetchone()
+    if not row:
+        return None
+    return get_payment(row["payment_id"])
 
 
 def get_payment(payment_id: str) -> Optional[PaymentResponse]:
