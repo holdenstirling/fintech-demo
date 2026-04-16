@@ -88,7 +88,7 @@ Each prompt is designed to demonstrate a different phase of the SDLC. The prompt
 
 | # | SDLC Phase | What Claude does | Tool calls you'll see |
 |---|---|---|---|
-| 1 | **Understand** | Reads the entire codebase, maps the architecture | 6-8 `Read` calls, dependency analysis |
+| 1 | **Understand** | Reads the codebase, maps architecture, hits live API | `Read` × 6-8, `Bash(curl)` for live API responses |
 | 2 | **Build** | Finds bug across frontend/backend boundary, writes the fix | `Grep` → `Read` → `Edit` |
 | 3 | **Test / Diagnose** | Traces a production incident across 3 files, identifies root cause chain | Multiple `Read` calls, cross-file reasoning |
 | 4 | **Build + Test** | Implements fix across 2 files, runs full test suite | `Edit` × 2 → `Bash(pytest)` — 13 tests pass |
@@ -120,25 +120,27 @@ Point at the $9,900 amounts.
 
 ---
 
-### Prompt 1 — Codebase Understanding (2 min)
+### Prompt 1 — Codebase Understanding (2.5 min)
 
 **SDLC phase: UNDERSTAND**
 
 ```
-Walk me through this codebase — what does it do, how does money move through it, what should I know before I touch anything?
+Walk me through this codebase — what does it do, how does money move through it, and what are the API endpoints? Hit the running service at localhost:8000 and show me example responses.
 ```
 
-**While Claude runs (~35 sec) — call out tool calls:**
+**While Claude runs (~45 sec) — call out tool calls:**
 
-> "Watch the tool calls in the terminal. `Read` on `main.py`, `payments.py`, `processor.py`, `database.py`, `config.py`, `models.py`. It's reading the entire service — routes, business logic, the external processor integration, the database schema. No file paths in the prompt. It found them."
+> "Watch the tool calls. `Read` on `main.py`, `payments.py`, `processor.py`, `database.py` — it's reading the entire service. No file paths in the prompt. It found them."
 
-> "This is how Claude Code works as an agent. It doesn't wait for you to open files. It uses `Read`, `Grep`, `Glob` tools to explore the codebase autonomously — the same way a senior engineer would `cd` around a new repo."
+> "Now watch — it's about to `Bash(curl)` the live API. It read the routes in the code, figured out the auth pattern from `config.py`, and is now hitting the actual running service to show real responses. That's not a mock. That's your production data."
 
-**After response:**
+> "This is what makes Claude Code an agent, not autocomplete. It uses `Read`, `Grep`, `Bash` — the same tools an engineer uses. It reads your code, then validates against the running system."
 
-> "Payment flow end to end. Processor isolation pattern. Security issues it flagged unprompted. What normally takes a new engineer a week of onboarding — meetings, Slack, wiki pages — took 30 seconds."
+**After response — point at the API responses:**
 
-> "And this works the same way whether Claude Code is running in the terminal, in VS Code, or in JetBrains. Same agent, same capabilities. Your team picks their environment."
+> "Payment flow end to end. Every endpoint with example responses from the live service. The auth header, the request format, the response schema — all from reading the code and then confirming against the running API."
+
+> "What normally takes a new engineer a week of onboarding — meetings, Slack, wiki pages, Postman collections — took 45 seconds. And this works the same way in the terminal, VS Code, or JetBrains."
 
 ---
 
@@ -280,7 +282,7 @@ cat CLAUDE.md
 | Segment | Clock | Claude? | Tool calls to watch |
 |---|---|---|---|
 | Setup narration | 0:00–0:30 | No | — |
-| Prompt 1: Understand | 0:30–2:30 | Yes (~35s) | `Read` × 6-8, `Grep` |
+| Prompt 1: Understand | 0:30–3:00 | Yes (~45s) | `Read` × 6-8, `Bash(curl)` live API |
 | Prompt 2: Build (bug fix) | 2:30–5:00 | Yes (~30s) | `Grep` → `Read` → `Edit` |
 | Click P1 | 5:00–5:15 | No | — |
 | Prompt 3: Diagnose | 5:15–7:45 | Yes (~45s) | `Read` × 3, cross-file analysis |
@@ -362,7 +364,7 @@ These are your 30–45 second windows. Don't fill every second — silence while
 
 ```
 PROMPT 1 — UNDERSTAND
-Walk me through this codebase — what does it do, how does money move through it, what should I know before I touch anything?
+Walk me through this codebase — what does it do, how does money move through it, and what are the API endpoints? Hit the running service at localhost:8000 and show me example responses.
 ```
 
 ```
