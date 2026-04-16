@@ -265,6 +265,7 @@
         loading: false,
         showModal: false,
         duplicates: 0,
+        prevented: 0,
         lastDuplicateCustomer: '',
         toast: { show: false, message: '', type: 'success' },
         stats: { total_volume: 0, count: 0, avg_amount: 0 },
@@ -272,7 +273,8 @@
 
         async init() {
           await this.fetchPayments();
-          setInterval(() => this.fetchPayments(), 8000);
+          setInterval(() => this.fetchPayments(), 3000);
+          setInterval(() => this.fetchIdempotencyStats(), 3000);
         },
 
         async fetchPayments() {
@@ -293,6 +295,31 @@
             count: data.length,
             avg_amount: data.length ? Math.round(total / data.length) : 0,
           };
+
+          // Auto-detect duplicate payments: same customer_id + amount within 2 minutes
+          const now = Date.now();
+          const seen = {};
+          const dupIds = new Set();
+          data.forEach(p => {
+            const ts = new Date(p.created_at.includes('Z') ? p.created_at : p.created_at + 'Z').getTime();
+            if (now - ts > 2 * 60 * 1000) return;
+            const key = `${p.customer_id}:${p.amount}`;
+            if (seen[key]) { dupIds.add(p.id); dupIds.add(seen[key]); }
+            else seen[key] = p.id;
+          });
+          if (dupIds.size > this.duplicates) {
+            this.duplicates = dupIds.size;
+          }
+        },
+
+        async fetchIdempotencyStats() {
+          try {
+            const res = await fetch('/api/idempotency/stats');
+            if (res.ok) {
+              const data = await res.json();
+              this.prevented = data.prevented_count || 0;
+            }
+          } catch (e) {} // endpoint doesn't exist before the fix — silently ignore
         },
 
         async submitPayment() {
